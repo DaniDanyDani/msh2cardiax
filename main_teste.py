@@ -10,8 +10,8 @@ gmsh.clear()
 
 # gmsh.option.setNumber("General.Terminal", 1)
 # gmsh.option.setNumber("Mesh.Algorithm", 6)
-gmsh.option.setNumber("Mesh.CharacteristicLengthMin", 0.75)
-gmsh.option.setNumber("Mesh.CharacteristicLengthMax", 2.25)
+gmsh.option.setNumber("Mesh.CharacteristicLengthMin", 1)
+gmsh.option.setNumber("Mesh.CharacteristicLengthMax", 3)
 # gmsh.option.setNumber("Mesh.Optimize",1)
 # gmsh.option.setNumber("Mesh.QualityType",2)
 
@@ -53,7 +53,7 @@ gmsh.model.geo.synchronize()
 
 if len(surface_tags) == 4:
     print(f"{surface_tags=}")
-    print(f"{loop=}")
+    print(f"{volume_tags=}")
     gmsh.model.addPhysicalGroup(2, [surface_tags[0]], 40, name="epi")
     gmsh.model.addPhysicalGroup(2, [surface_tags[1]], 20, name="ve")
     gmsh.model.addPhysicalGroup(2, [surface_tags[2]], 30, name="vd")
