@@ -3,11 +3,25 @@ import math
 import os
 import sys
 
+
+args = sys.argv[1:]
+
+x_c, y_c, z_c, r = 195.7, 180.4, -15.0, 5.0
+
+if len(args[1:4]) >= 4:
+    print(f"Número de argumentos inválidos. Esperado: 4 Recebido: {len(args[1:4])}")
+    print(f"Execução: python main.py x_c y_c z_c r -nopopup")
+    sys.exit()
+
+
+x_c = float(args[0])
+y_c = float(args[1])
+z_c = float(args[2])
+r = float(args[3]) 
+
+os.system(f"python generate_fibrose.py {x_c} {y_c} {z_c} {r}")
+
 filename = "Patient_7"
-x_coord = 195.7
-y_coord = 180.4
-z_coord = -15.0
-raio = 1.0
 
 gmsh.initialize()
 gmsh.clear()
@@ -40,27 +54,24 @@ gmsh.model.mesh.classifySurfaces(angle * math.pi / 180., includeBoundary,
 gmsh.model.mesh.createGeometry()
 
 
-fibrose_tag = gmsh.model.occ.addSphere(x_coord, y_coord, z_coord, raio, 1)
-
-gmsh.model.occ.synchronize()
+gmsh.merge(os.path.join(path, 'fibrose.stl'))
 
 surfaces = gmsh.model.getEntities(dim=2)
+
 surface_tags = [s[1] for s in surfaces]
 loop = gmsh.model.geo.addSurfaceLoop(surface_tags, 1)
-loop_fibrose = gmsh.model.geo.addSurfaceLoop([fibrose_tag], 2)
+loop_fibrose = gmsh.model.geo.addSurfaceLoop([surface_tags[4]], 2)
 volume = gmsh.model.geo.addVolume([loop], 1)
 volume_fibrose = gmsh.model.geo.addVolume([loop_fibrose], 2)
 
 gmsh.model.geo.synchronize()
 
-
-
 if len(surface_tags) == 5:
     print(f"{surface_tags=}")
-    gmsh.model.addPhysicalGroup(2, [surface_tags[1]], 40, name="epi")
-    gmsh.model.addPhysicalGroup(2, [surface_tags[2]], 20, name="ve")
-    gmsh.model.addPhysicalGroup(2, [surface_tags[3]], 30, name="vd")
-    gmsh.model.addPhysicalGroup(2, [surface_tags[4]], 10, name="base")
+    gmsh.model.addPhysicalGroup(2, [surface_tags[0]], 40, name="epi")
+    gmsh.model.addPhysicalGroup(2, [surface_tags[1]], 20, name="ve")
+    gmsh.model.addPhysicalGroup(2, [surface_tags[2]], 30, name="vd")
+    gmsh.model.addPhysicalGroup(2, [surface_tags[3]], 10, name="base")
     gmsh.model.addPhysicalGroup(3, [volume], 1, name="healthy")
     gmsh.model.addPhysicalGroup(3, [volume_fibrose], 2, name="fibrose")
     gmsh.model.mesh.generate(3)
