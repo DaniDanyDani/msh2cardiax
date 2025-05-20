@@ -22,6 +22,173 @@ import vtk
 import os
 import sys
 
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import math
+from pathlib import Path
+
+# noinspection PyUnresolvedReferences
+import vtkmodules.vtkInteractionStyle
+# noinspection PyUnresolvedReferences
+import vtkmodules.vtkRenderingOpenGL2
+from vtkmodules.vtkCommonColor import vtkNamedColors
+from vtkmodules.vtkCommonCore import (
+    VTK_DOUBLE_MAX,
+    vtkPoints
+)
+from vtkmodules.vtkCommonCore import (
+    VTK_VERSION_NUMBER,
+    vtkVersion
+)
+from vtkmodules.vtkCommonDataModel import (
+    vtkIterativeClosestPointTransform,
+    vtkPolyData
+)
+from vtkmodules.vtkCommonTransforms import (
+    vtkLandmarkTransform,
+    vtkTransform
+)
+from vtkmodules.vtkFiltersGeneral import (
+    vtkOBBTree,
+    vtkTransformPolyDataFilter
+)
+from vtkmodules.vtkFiltersModeling import vtkHausdorffDistancePointSetFilter
+from vtkmodules.vtkIOGeometry import (
+    vtkBYUReader,
+    vtkOBJReader,
+    vtkSTLReader
+)
+from vtkmodules.vtkIOLegacy import (
+    vtkPolyDataReader,
+    vtkPolyDataWriter
+    )
+from vtkmodules.vtkIOPLY import vtkPLYReader
+from vtkmodules.vtkIOXML import vtkXMLPolyDataReader
+from vtkmodules.vtkInteractionWidgets import (
+    vtkCameraOrientationWidget,
+    vtkOrientationMarkerWidget
+)
+from vtkmodules.vtkRenderingAnnotation import vtkAxesActor
+from vtkmodules.vtkRenderingCore import (
+    vtkActor,
+    vtkDataSetMapper,
+    vtkRenderWindow,
+    vtkRenderWindowInteractor,
+    vtkRenderer
+)
+
+def align_bounding_boxes(source, target):
+    # Use OBBTree to create an oriented bounding box for target and source
+    source_obb_tree = vtkOBBTree()
+    source_obb_tree.SetDataSet(source)
+    source_obb_tree.SetMaxLevel(1)
+    source_obb_tree.BuildLocator()
+
+    target_obb_tree = vtkOBBTree()
+    target_obb_tree.SetDataSet(target)
+    target_obb_tree.SetMaxLevel(1)
+    target_obb_tree.BuildLocator()
+
+    source_landmarks = vtkPolyData()
+    source_obb_tree.GenerateRepresentation(0, source_landmarks)
+
+    target_landmarks = vtkPolyData()
+    target_obb_tree.GenerateRepresentation(0, target_landmarks)
+
+    lm_transform = vtkLandmarkTransform()
+    # lm_transform.SetModeToRigidBody()
+    lm_transform.SetModeToSimilarity()
+    lm_transform.SetTargetLandmarks(target_landmarks.GetPoints())
+    best_distance = VTK_DOUBLE_MAX
+    best_points = vtkPoints()
+    best_distance = best_bounding_box(
+        "X",
+        target,
+        source,
+        target_landmarks,
+        source_landmarks,
+        best_distance,
+        best_points)
+    best_distance = best_bounding_box(
+        "Y",
+        target,
+        source,
+        target_landmarks,
+        source_landmarks,
+        best_distance,
+        best_points)
+    best_distance = best_bounding_box(
+        "Z",
+        target,
+        source,
+        target_landmarks,
+        source_landmarks,
+        best_distance,
+        best_points)
+
+    lm_transform.SetSourceLandmarks(best_points)
+    lm_transform.Modified()
+
+    lm_transform_pd = vtkTransformPolyDataFilter()
+    lm_transform_pd.SetInputData(source)
+    lm_transform_pd.SetTransform(lm_transform)
+    lm_transform_pd.Update()
+
+    source.DeepCopy(lm_transform_pd.GetOutput())
+
+    return
+
+
+def best_bounding_box(axis, target, source, target_landmarks, source_landmarks, best_distance, best_points):
+    distance = vtkHausdorffDistancePointSetFilter()
+    test_transform = vtkTransform()
+    test_transform_pd = vtkTransformPolyDataFilter()
+    lm_transform = vtkLandmarkTransform()
+    lm_transform_pd = vtkTransformPolyDataFilter()
+
+    # lm_transform.SetModeToRigidBody()
+    lm_transform.SetModeToSimilarity()
+    lm_transform.SetTargetLandmarks(target_landmarks.GetPoints())
+
+    source_center = source_landmarks.GetCenter()
+
+    delta = 90.0
+    for i in range(0, 4):
+        angle = delta * i
+        # Rotate about center
+        test_transform.Identity()
+        test_transform.Translate(source_center[0], source_center[1], source_center[2])
+        if axis == "X":
+            test_transform.RotateX(angle)
+        elif axis == "Y":
+            test_transform.RotateY(angle)
+        else:
+            test_transform.RotateZ(angle)
+        test_transform.Translate(-source_center[0], -source_center[1], -source_center[2])
+
+        test_transform_pd.SetTransform(test_transform)
+        test_transform_pd.SetInputData(source_landmarks)
+        test_transform_pd.Update()
+
+        lm_transform.SetSourceLandmarks(test_transform_pd.GetOutput().GetPoints())
+        lm_transform.Modified()
+
+        lm_transform_pd.SetInputData(source)
+        lm_transform_pd.SetTransform(lm_transform)
+        lm_transform_pd.Update()
+
+        distance.SetInputData(0, target)
+        distance.SetInputData(1, lm_transform_pd.GetOutput())
+        distance.Update()
+
+        test_distance = distance.GetOutput(0).GetFieldData().GetArray("HausdorffDistance").GetComponent(0, 0)
+        if test_distance < best_distance:
+            best_distance = test_distance
+            best_points.DeepCopy(test_transform_pd.GetOutput().GetPoints())
+
+    return best_distance
+
 args = sys.argv[1:]
 
 colors = vtkNamedColors()
@@ -68,7 +235,7 @@ if len(components) > 1:
         transform_to_center.Translate(-center[0], -center[1], -center[2])
 
         transformTranslateFilter = vtk.vtkTransformPolyDataFilter()
-        transformTranslateFilter.SetInputConnection(reader.GetOutputPort())
+        transformTranslateFilter.SetInputData(components[i])
         transformTranslateFilter.SetTransform(transform_to_center)
         transformTranslateFilter.Update()
 
@@ -87,6 +254,7 @@ if len(components) > 1:
         transformScaleTransformedFilter.SetInputConnection(transformScaleFilter.GetOutputPort())
         transformScaleTransformedFilter.SetTransform(transform_from_center)
         transformScaleTransformedFilter.Update()
+        align_bounding_boxes(transformScaleTransformedFilter.GetOutput(), components[i])
 
         appendFilter.AddInputData(transformScaleTransformedFilter.GetOutput())
 
@@ -127,10 +295,13 @@ else:
         transformScaleTransformedFilter.Update()
 
     transformed = transformScaleTransformedFilter
+    align_bounding_boxes(transformed.GetOutput(), reader.GetOutput())
     print(transformed)
 
 
 if "-nopopup" not in args:
+
+    print("Iniciando visualização VTK...")
     originalMapper = vtkPolyDataMapper()
     originalMapper.SetInputConnection(reader.GetOutputPort())
     originalActor = vtkActor()
