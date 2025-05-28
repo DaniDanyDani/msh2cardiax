@@ -103,13 +103,39 @@ modelo_original = read_model(model)
 elemenTypes_fibrose, elemenTags_fibrose, elemenNodeTags_fibrose = gmsh.model.mesh.getElements(modelo_original["fibrose"][0], modelo_original["fibrose"][1])
 elemenTypes_healthy, elemenTags_healthy, elemenNodeTags_healthy = gmsh.model.mesh.getElements(modelo_original["healthy"][0], modelo_original["healthy"][1])
 
-print(f"{elemenNodeTags_fibrose}")
-print(f"{elemenNodeTags_healthy}")
+# print(type(elemenNodeTags_fibrose[0]),elemenNodeTags_fibrose[0],"\n", elemenTags_fibrose[0])
 
-for elementsNodes_fibrose in elemenNodeTags_fibrose:
-    # print(f"{node_fibrose}")
-    if elementsNodes_fibrose in elemenNodeTags_healthy:
-        print(f"AAAAAAAAAAAAA")
+
+connectado = []
+if elemenTypes_fibrose == 4:
+    
+    i = 0
+    for tag_fibrose in elemenTags_fibrose:
+        nodes_fibroses = elemenNodeTags_fibrose[i:i+4]    
+        # print(nodes_fibroses)
+
+        j = 0
+        for tag_healthy in elemenTags_healthy:
+            nodes_healthy = elemenNodeTags_healthy[j:j+4]   
+
+            if j%2==0:
+                print(f"Tentando {tag_fibrose=} e {tag_healthy}") 
+
+            for nodes_fibroses in nodes_fibroses:
+                # print(f'{nodes_healthy=}')
+                for node_fibroses in nodes_fibroses:
+                    # print(f'{node_fibroses=}')
+                    for node_healthy in nodes_healthy:
+                        # print(f'{nodes_healthy=}')
+                        if node_fibroses == node_healthy.any():
+                            connectado.append((tag_fibrose, tag_healthy))
+                            i += 4
+                            j += 4
+                            print(f"conectividade entre {tag_fibrose=} e {tag_healthy=}")
+
+            
+
+
 
 gmsh.clear()
 
