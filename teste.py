@@ -1,159 +1,147 @@
-import gmsh
+from pathlib import Path
+from vtkmodules.vtkIOLegacy import vtkPolyDataReader
+from vtkmodules.vtkIOPLY import vtkPLYReader
+from vtkmodules.vtkIOXML import vtkXMLPolyDataReader
+
+from vtkmodules.vtkCommonCore import (
+    vtkIdList
+)
+
+from tqdm import tqdm
+
+import vtk
+import os
 import sys
+import meshio
 
-def read_model(model):
+def ReadUnstructuredGrid(file_name):
+    reader = vtk.vtkUnstructuredGridReader()
+    reader.SetFileName(file_name)
+    reader.Update()
+    return reader.GetOutput()
 
-    if len(model) > 1 and model[1][0] != '-':
-        gmsh.open(model[1])
-    else:
-        gmsh.model.occ.addCone(1, 0, 0, 1, 0, 0, 0.5, 0.1)
-        gmsh.model.occ.synchronize()
-        gmsh.model.mesh.generate()
+def SaveUnstructuredGrid(mesh, file_name):
+    writer = vtk.vtkUnstructuredGridWriter()
+    writer.SetFileName(file_name)
+    writer.SetInputData(mesh)
+    writer.Write()
 
-    print('\nModel ' + gmsh.model.getCurrent() + '.msh (' +
-      str(gmsh.model.getDimension()) + 'D)')
+markers = {
+    "epi":40,
+    "ve":20,
+    "vd":30,
+    "base":10,
+    "healthy":1,
+    "fibrose":2
+}
 
 
-    entities = gmsh.model.getEntities()
-    # print(len(entities))
+input_file = "Patient_7_mesh.vtk"
+output_file = "Patient_7_mesh_editado.vtk"
+n_camadas = -3
+aumentar = False
+diminuir = False
 
-    for e in entities:
+if n_camadas>0:
+    aumentar = True
+    print(f"{n_camadas=}: Aumentando fibrose.")
+elif n_camadas<0:
+    print(f"{n_camadas=}: Diminuindo fibrose.")
+    diminuir = True
+else:
+    sys.exit(1)
 
-        dim = e[0]
-        tag = e[1]
+# Malha de entrada
+input_mesh = ReadUnstructuredGrid(input_file)
+if not input_mesh.GetCellData().HasArray("CellEntityIds"):
+    print("ERRO: 'CellEntityIds' não encontrado em input_mesh.")
+    sys.exit(1)
 
-        # Pega os nós da entidade (dim,tag):
-        nodeTags, nodeCoords, nodeParams = gmsh.model.mesh.getNodes(dim, tag)
+cell_array_input = input_mesh.GetCellData().GetArray("CellEntityIds")
+if cell_array_input.GetNumberOfTuples() != input_mesh.GetNumberOfCells():
+    print("ERRO: Tamanho do array 'CellEntityIds' não corresponde ao número de células.")
+    sys.exit(1)
 
-        # Pega os elementos da entidade (dim,tag):
-        elemTypes, elemTags, elemNodeTags = gmsh.model.mesh.getElements(dim, tag)
+valid_values = set(markers.values())
+for i in range(cell_array_input.GetNumberOfTuples()):
+    val = cell_array_input.GetValue(i)
+    if val not in valid_values:
+        print(f"Aviso: Célula {i} tem valor inesperado: {val}")
 
-        # Tipo e nome da entidade:
-        type = gmsh.model.getType(dim, tag)
-        name = gmsh.model.getEntityName(dim, tag)
-        if len(name): name += ' '
-        # print("\nEntity " + name + str(e) + " of type " + type)
 
-        # # Número de nós e elementos
-        # numElem = sum(len(i) for i in elemTags)
-        # print(" - Mesh has " + str(len(nodeTags)) + " nodes and " + str(numElem) +
-        #     " elements")
 
-        # Physical group que a entidade faz parte.
-        physicalTags = gmsh.model.getPhysicalGroupsForEntity(dim, tag)
-        if len(physicalTags):
-            s = ''
-            for p in physicalTags:
-                n = gmsh.model.getPhysicalName(dim, p)
-                if n: n += ''
-                s += n + '(' + str(dim) + ', ' + str(p) + ') '
-            # print(" - Physical groups: " + s)
+# Cópia inicial da malha de entrada
+output_mesh = vtk.vtkUnstructuredGrid()
+output_mesh.DeepCopy(input_mesh)
 
-        # # Imprime o tipo do elemento
-        # for t in elemTypes:
-        #     name, dim, order, numv, parv, _ = gmsh.model.mesh.getElementProperties(
-        #         t)
-        #     print(" - Element type: " + name + ", order " + str(order) + "\n")
+output_cell_array = vtk.vtkIntArray()
+output_cell_array.DeepCopy(input_mesh.GetCellData().GetArray("CellEntityIds"))
+output_cell_array.SetName("CellEntityIds")
+output_mesh.GetCellData().SetScalars(output_cell_array)
+
+
+cell_array = output_mesh.GetCellData().GetArray("CellEntityIds")
+if cell_array is None:
+    print("ERRO: 'CellEntityIds' não encontrado em output_mesh.")
+    sys.exit(1)
+
+
+# Número total de células
+qntCells = input_mesh.GetNumberOfCells()
+
+for camada in range(abs(n_camadas)):
+    print(f" Iteração {camada+1}/{abs(n_camadas)}:")
+
+    temp_mesh = vtk.vtkUnstructuredGrid()
+    temp_mesh.DeepCopy(output_mesh)
+
+    for idCell in tqdm(range(qntCells), desc="  Processando células", unit="célula"):
+
+        cell_data = output_mesh.GetCellData().GetArray("CellEntityIds").GetValue(idCell)
         
+        if cell_data == markers["fibrose"]:
 
-        # print(f"{n=}")
-        if n.strip() == "epi":
-            epi = e
-
-        elif n.strip() == "ve":
-            # print(f"{e=}")
-            ve = e
-
-        elif n.strip() == "vd":
-            # print(f"{e=}")
-            vd = e
-        
-        elif n.strip() == "base":
-            # print(f"{e=}")
-            base = e
-
-        elif n.strip() == "healthy":
-            # print(f"{e=}")
-            healthy = e
-        
-        elif n.strip() == "fibrose":
-            # print(f"{e=}")
-            fibrose = e
-        
-    modelo_original = {
-        "epi": epi,
-        "ve": ve,
-        "vd": vd,
-        "base": base,
-        "healthy": healthy,
-        "fibrose": fibrose
-    }
-
-    print(f"Entidades salvas em: \n    {modelo_original=}\n")
-    return modelo_original
-
-
-
-
-gmsh.initialize()
-model = sys.argv
-
-modelo_original = read_model(model)
-
-elemenTypes_fibrose, elemenTags_fibrose, elemenNodeTags_fibrose = gmsh.model.mesh.getElements(modelo_original["fibrose"][0], modelo_original["fibrose"][1])
-elemenTypes_healthy, elemenTags_healthy, elemenNodeTags_healthy = gmsh.model.mesh.getElements(modelo_original["healthy"][0], modelo_original["healthy"][1])
-
-# print(type(elemenNodeTags_fibrose[0]),elemenNodeTags_fibrose[0],"\n", elemenTags_fibrose[0])
-
-
-connectado = []
-if elemenTypes_fibrose == 4:
-    
-    i = 0
-    for tag_fibrose in elemenTags_fibrose:
-        nodes_fibroses = elemenNodeTags_fibrose[i:i+4]    
-        # print(nodes_fibroses)
-
-        j = 0
-        for tag_healthy in elemenTags_healthy:
-            nodes_healthy = elemenNodeTags_healthy[j:j+4]   
-
-            if j%2==0:
-                print(f"Tentando {tag_fibrose=} e {tag_healthy}") 
-
-            for nodes_fibroses in nodes_fibroses:
-                # print(f'{nodes_healthy=}')
-                for node_fibroses in nodes_fibroses:
-                    # print(f'{node_fibroses=}')
-                    for node_healthy in nodes_healthy:
-                        # print(f'{nodes_healthy=}')
-                        if node_fibroses == node_healthy.any():
-                            connectado.append((tag_fibrose, tag_healthy))
-                            i += 4
-                            j += 4
-                            print(f"conectividade entre {tag_fibrose=} e {tag_healthy=}")
-
+            cell_point_ids = vtk.vtkIdList()
+            input_mesh.GetCellPoints(idCell, cell_point_ids)
             
+            neighborCellIds = vtkIdList()
+            visited_neighbors = set()
+
+            for i in range(cell_point_ids.GetNumberOfIds()):
+                point_id_list = vtk.vtkIdList()
+                point_id_list.InsertNextId(cell_point_ids.GetId(i))
+
+                local_neighbors = vtk.vtkIdList()
+                input_mesh.GetCellNeighbors(idCell, point_id_list, local_neighbors)
+
+                for j in range(local_neighbors.GetNumberOfIds()):
+                    neighbor_id = local_neighbors.GetId(j)
+                    if neighbor_id != idCell:
+                        visited_neighbors.add(neighbor_id)
 
 
+            for neighbor_id in visited_neighbors:
+ 
+                if 0 <= neighbor_id < qntCells:
+                    neighbor_data = output_mesh.GetCellData().GetArray("CellEntityIds").GetValue(neighbor_id)
+                else:
+                    print("ID INVÁLIDO APRA NEIGHBOR")
+                    sys.exit(1)
+                
+                if aumentar and neighbor_data == markers["healthy"]:
+                    temp_mesh.GetCellData().GetArray("CellEntityIds").SetValue(neighbor_id, markers["fibrose"])
 
-gmsh.clear()
+                elif diminuir:
+                    vizinho_nao_fibrose = any(
+                        output_mesh.GetCellData().GetArray("CellEntityIds").GetValue(neighbor_id) != markers["fibrose"]
+                        for neighbor_id in visited_neighbors
+                    )
+                    if vizinho_nao_fibrose:
+                        temp_mesh.GetCellData().GetArray("CellEntityIds").SetValue(idCell, markers["healthy"])
 
 
+    output_mesh.DeepCopy(temp_mesh)
 
-
-
-
-
-
-
-# ============================ Final ============================ 
-# Visualização
-if '-nopopup' not in sys.argv:
-    gmsh.fltk.run()
-
-# Limpar data
-gmsh.clear()
-
-# Finalizar
-gmsh.finalize()
+SaveUnstructuredGrid(output_mesh, output_file)
+meshio.write("Patient_7_mesh_editado.msh", output_mesh)
+print(f"Malha salva em: {output_file}")
