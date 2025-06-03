@@ -2,7 +2,7 @@ from pathlib import Path
 from vtkmodules.vtkIOLegacy import vtkPolyDataReader
 from vtkmodules.vtkIOPLY import vtkPLYReader
 from vtkmodules.vtkIOXML import vtkXMLPolyDataReader
-
+from vtkmodules.vtkIOXML import vtkXMLUnstructuredGridWriter
 from vtkmodules.vtkCommonCore import (
     vtkIdList
 )
@@ -38,7 +38,8 @@ markers = {
 
 input_file = "Patient_7_mesh.vtk"
 output_file = "Patient_7_mesh_editado.vtk"
-n_camadas = -3
+output_file_msh = "Patient_7_mesh_editado.msh"
+n_camadas = 1
 aumentar = False
 diminuir = False
 
@@ -143,5 +144,68 @@ for camada in range(abs(n_camadas)):
     output_mesh.DeepCopy(temp_mesh)
 
 SaveUnstructuredGrid(output_mesh, output_file)
-meshio.write("Patient_7_mesh_editado.msh", output_mesh)
+# meshio.write("Patient_7_mesh_editado.msh", output_mesh)
 print(f"Malha salva em: {output_file}")
+
+def write_msh_from_vtk(mesh, filename_msh, field_name="CellEntityIds"):
+    with open(filename_msh, "w") as f:
+        f.write("$MeshFormat\n2.0 0 8\n$EndMeshFormat\n")
+
+        f.write("$PhysicalNames\n6\n")
+        f.write('2 10 "base"\n2 20 "ve"\n2 30 "vd"\n2 40 "epi"\n3 1 "healthy"\n3 2 "fibrose"\n')
+        f.write("$EndPhysicalNames\n")
+
+        # NÓS
+        points = mesh.GetPoints()
+        num_points = points.GetNumberOfPoints()
+        f.write("$Nodes\n")
+        f.write(f"{num_points}\n")
+        for i in range(num_points):
+            x, y, z = points.GetPoint(i)
+            f.write(f"{i+1} {x:.16f} {y:.16f} {z:.16f}\n")
+        f.write("$EndNodes\n")
+
+        # ELEMENTOS
+        entity_array = mesh.GetCellData().GetArray(field_name)
+        if entity_array is None:
+            raise RuntimeError(f"Campo '{field_name}' não encontrado nas células.")
+
+        f.write("$Elements\n")
+        written_elements = 0
+        element_lines = []
+
+        geom_by_phys = {
+            1: 1, 2: 2, 40: 1, 30: 2, 20: 3, 10: 4
+        }
+
+        for i in range(mesh.GetNumberOfCells()):
+            cell = mesh.GetCell(i)
+            cell_type = cell.GetCellType()
+            node_ids = [cell.GetPointId(j)+1 for j in range(cell.GetNumberOfPoints())]
+            phys_id = entity_array.GetValue(i)
+            geom_id = geom_by_phys.get(phys_id, 1)
+
+            if cell_type == vtk.VTK_TETRA:
+                gmsh_type = 4
+            elif cell_type == vtk.VTK_HEXAHEDRON:
+                gmsh_type = 5
+            elif cell_type == vtk.VTK_TRIANGLE:
+                gmsh_type = 2
+            elif cell_type == vtk.VTK_QUAD:
+                gmsh_type = 3
+            else:
+                continue  # Tipo não suportado
+
+            tag_str = f"{gmsh_type} 2 {phys_id} {geom_id}"
+            node_str = " ".join(str(nid) for nid in node_ids)
+            element_lines.append(f"{written_elements+1} {tag_str} {node_str}")
+            written_elements += 1
+
+        f.write(f"{written_elements}\n")
+        for line in element_lines:
+            f.write(f"{line}\n")
+        f.write("$EndElements\n")
+
+        print(f"Arquivo .msh escrito em: {filename_msh}")
+
+write_msh_from_vtk(output_mesh, output_file_msh, field_name="CellEntityIds")
