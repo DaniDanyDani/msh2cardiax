@@ -1,6 +1,5 @@
 import argparse
 from tqdm import tqdm
-import meshio
 
 from vtkmodules.vtkCommonCore import vtkIdList
 from vtkmodules.vtkIOLegacy import vtkPolyDataReader
@@ -122,10 +121,10 @@ shrink = False
 
 if n_layers > 0:
     expand = True
-    print(f"{n_layers=}: Expanding fibrosis.")
+    print(f"\n{n_layers=}: Expanding fibrosis.")
 elif n_layers < 0:
     shrink = True
-    print(f"{n_layers=}: Shrinking fibrosis.")
+    print(f"\n{n_layers=}: Shrinking fibrosis.")
 else:
     sys.exit(1)
 
@@ -177,7 +176,6 @@ for layer in range(abs(n_layers)):
     has_healthy = False
 
     for cell_id in tqdm(range(total_cells), desc="  Processing cells", ascii=True):
-    # for cell_id in range(total_cells):
 
         cell_data = output_mesh.GetCellData().GetArray("CellEntityIds").GetValue(cell_id)
         
