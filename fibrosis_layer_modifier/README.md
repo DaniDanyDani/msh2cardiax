@@ -1,6 +1,6 @@
 # Fibrosis Layer Modifier
 
-Este projeto fornece um script Python para expandir ou reduzir regiões de fibrose em um modelo cardíaco tridimensional no formato VTK. A fibrose é identificada por marcações (`CellEntityIds`) presentes na malha.
+Este projeto fornece um script Python para expandir ou reduzir regiões de fibrose em um modelo cardíaco tridimensional no formato MSH. A fibrose é identificada por marcações presentes na malha volumétrica.
 
 ## Funcionalidades
 
@@ -29,20 +29,21 @@ Este projeto fornece um script Python para expandir ou reduzir regiões de fibro
   - `tqdm`
   - `argparse`
   - `meshio`
+  - `gmsh`
 
 Instale as dependências com:
 
 ```bash
-pip install vtk tqdm meshio
+pip install vtk tqdm meshio gmsh
 ```
 
 ### Execução
 
 ```bash
-python main.py -i input.vtk -o output -n N
+python main.py -i input_file_name -o output_file_name -n N
 ```
 
-- `-i`, `--input`: Caminho para o arquivo .vtk de entrada contendo a malha original.  
+- `-i`, `--input`: Caminho para o arquivo .msh de entrada contendo a malha original (sem extensão).  
 - `-o`, `--output`: Nome base do arquivo de saída (sem extensão).  
 - `-n`, `--n_layers`: Número de camadas:  
   - Positivo → expande a fibrose.  
@@ -58,11 +59,11 @@ python main.py -i input.vtk -o output -n N
 Expandir a fibrose em 3 camadas:
 
 ```bash
-python main.py -i Example.vtk -o heart_expanded -n 3
+python main.py -i Example -o Example_expanded -n 3
 ```
 
 Reduzir a fibrose em 2 camadas:
 
 ```bash
-python main.py -i Example.vtk -o heart_reduced -n -2
+python main.py -i Example -o Example_reduced -n -2
 ```
