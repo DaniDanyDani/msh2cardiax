@@ -9,6 +9,8 @@ from vtkmodules.vtkIOXML import vtkXMLUnstructuredGridWriter
 
 import vtk
 import sys
+import gmsh
+
 
 def ReadUnstructuredGrid(file_name):
     reader = vtk.vtkUnstructuredGridReader()
@@ -98,7 +100,7 @@ def write_msh_from_vtk(mesh, filename_msh, field_name="CellEntityIds"):
         print(f"Mesh .msh write in: {filename_msh}.msh")
 
 parser = argparse.ArgumentParser(description="Expand or shrink fibrosis in a VTK heart mesh.")
-parser.add_argument("-i", "--input", required=True, help="Input .vtk file")
+parser.add_argument("-i", "--input", required=True, help="Input file name")
 parser.add_argument("-o", "--output", required=False, help="Output file name")
 parser.add_argument("-n", "--n_layers", type=int, required=True, help="Number of layers: positive to expand, negative to shrink")
 
@@ -107,6 +109,13 @@ args = parser.parse_args()
 input_file = args.input
 output_file = args.output
 n_layers = args.n_layers
+
+
+print("Converting .msh in .vtk file")
+gmsh.initialize()
+gmsh.open(input_file+'.msh')
+gmsh.write(input_file+'.vtk')
+gmsh.finalize()
 
 expand = False
 shrink = False
@@ -122,7 +131,7 @@ else:
 
 
 # Input mesh
-input_mesh = ReadUnstructuredGrid(input_file)
+input_mesh = ReadUnstructuredGrid(input_file+'.vtk')
 if not input_mesh.GetCellData().HasArray("CellEntityIds"):
     print("ERROR: 'CellEntityIds' not found in input_mesh.")
     sys.exit(1)
