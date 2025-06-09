@@ -9,6 +9,7 @@ from vtkmodules.vtkIOXML import vtkXMLUnstructuredGridWriter
 import vtk
 import sys
 import gmsh
+import os
 
 
 def ReadUnstructuredGrid(file_name):
@@ -106,14 +107,19 @@ parser.add_argument("-n", "--n_layers", type=int, required=True, help="Number of
 args = parser.parse_args()
 
 input_file = args.input
-output_file = args.output
 n_layers = args.n_layers
 
+output_dir = os.getcwd() + '/output/'
+# print(output_dir)
+output_file = output_dir + args.output
+# print(output_file)
 
-print("Converting .msh in .vtk file")
+demo_biv_dir = os.getcwd() + '/mesh_generator/biv-gmsh2cardiax'
+
+print("\nConverting .msh in .vtk file")
 gmsh.initialize()
 gmsh.open(input_file+'.msh')
-gmsh.write(input_file+'.vtk')
+gmsh.write(output_file+'.vtk')
 gmsh.finalize()
 
 expand = False
@@ -130,7 +136,7 @@ else:
 
 
 # Input mesh
-input_mesh = ReadUnstructuredGrid(input_file+'.vtk')
+input_mesh = ReadUnstructuredGrid(output_file+'.vtk')
 if not input_mesh.GetCellData().HasArray("CellEntityIds"):
     print("ERROR: 'CellEntityIds' not found in input_mesh.")
     sys.exit(1)
@@ -226,16 +232,19 @@ for layer in range(abs(n_layers)):
     output_mesh.DeepCopy(temp_mesh)
     if expand and not has_healthy:
         print(f"In iteration {layer + 1}, there is no more healthy tissue. Saving mesh and exiting.")
-        write_vtk(output_mesh, output_file)
+        # write_vtk(output_mesh, output_file)
         write_msh_from_vtk(output_mesh, output_file)
         sys.exit(0)
 
     if shrink and not has_fibrosis:
         print(f"In iteration {layer + 1}, there is no more fibrosis. Saving mesh and exiting.")
-        write_vtk(output_mesh, output_file)
+        # write_vtk(output_mesh, output_file)
         write_msh_from_vtk(output_mesh, output_file)
         sys.exit(0)
 
 
-write_vtk(output_mesh, output_file)
+# write_vtk(output_mesh, output_file)
 write_msh_from_vtk(output_mesh, output_file)
+
+print(f"\nConverting .msh in .xml file")
+os.system(f'python {demo_biv_dir}/demo-biv.py {output_file}.msh {output_file} {demo_biv_dir}/pvloop_data.txt')
