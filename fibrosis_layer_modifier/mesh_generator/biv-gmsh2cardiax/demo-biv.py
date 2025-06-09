@@ -3,13 +3,29 @@ import sys, time, os
 import numpy as np
 
 
-material_params = {'problemtyp': 'THREE_DIM', 
-'material_type': 'Guccione', 
-'material_coef': [1.1, 6.6, 4.0, 2.6, 0, 300.], 
-'fiber_type': 'fiber_orthotropic', #'fiber_transversely_isotropic', 
-'num_increments': 1, 
-'pressure_marker': 30, 
-'pressure_value': 2.0}
+# healthy
+material_healthy_params = {
+   'problemtyp': 'THREE_DIM', 
+   'material_type': 'Guccione', 
+   'material_coef': [650, 6.62, 3.65, 2.65, 0, 200000.0], 
+   'fiber_type': 'fiber_orthotropic', #'fiber_transversely_isotropic', 
+   'num_increments': 1, 
+   'pressure_marker': 30, 
+   'pressure_value': .0
+   }
+
+# Fibrotic
+material_fibrotic_params = {
+   'problemtyp': 'THREE_DIM', 
+   'material_type': 'Guccione', 
+   'material_coef': [650, 6.62, 3.65, 2.65, 0, 200000.0], 
+   'fiber_type': 'fiber_orthotropic', #'fiber_transversely_isotropic', 
+   'num_increments': 1, 
+   'pressure_marker': 30, 
+   'pressure_value': .0
+   }
+
+material_params = [material_healthy_params, material_fibrotic_params]
 
 #material_params = {'problemtyp': 'THREE_DIM', 
 #        'material_type': 'HolzapfelOgden', 
@@ -18,11 +34,29 @@ material_params = {'problemtyp': 'THREE_DIM',
 #        'num_increments': 100, 
 #        'pressure_marker': 30, 'pressure_value': 2000.0}
 
-pvloop_params = {'C_art': 0.001, 
-'R_per': 20000.0, 
-'P_o': 1000.0, 
-'p_art': 10800.0, 
-'stroke_volume': 0.0}
+pvloop_params = {
+    'size': 901,
+    'total_time': 0.900000,
+    'C_art': 0.014,
+    'C_ven': 0.3,
+    'R_ao': 3850.0,
+    'V_ven_zero': 3300.0,
+    'P_o': 500.0,
+    'B_LA': 0.049,
+    'V_art_zero': 580.0,
+    'tau': 25.0,
+    'R_ven': 1400.0,
+    'A_LA': 58.67,
+    'R_mv': 1750.0,
+    'E_es_LA': 60.0,
+    'p_art': 10800.0,
+    'p_ven': 1600.0,
+    'T_max': 200.0,
+    'R_per': 140000.0,
+    'stroke_volume': 0.0,
+    'T_ref': 1.59
+    }
+
 
 
 if (len(sys.argv) < 3):
@@ -42,7 +76,7 @@ if (not os.path.isfile(pvloop_data)):
    sys.exit(-1)
 
 
-#convert from mm to m
+# convert from mm to m
 factor = 1e-3
 biv = True
 cg.gmsh2xml(gmsh_mesh, output_xml + '_cardiax.xml', factor, material_params,

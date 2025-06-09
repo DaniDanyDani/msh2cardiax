@@ -244,45 +244,36 @@ def gmsh2xml (gmshMesh, outputMesh, unit_factor, materialProperties, PVloopParam
 
 
     if(len(prescDispl) > 0):
-        if(materialProperties['problemtyp'] is not None):
+        if(materialProperties and materialProperties[0]['problemtyp'] is not None):
             
-            outputFile.write(f'<elasticity type="{materialProperties["problemtyp"]}">\n')
-            outputFile.write(f'    <parameters num_materials="{len(material_type)}">\n')
+            outputFile.write(f'<elasticity type="{materialProperties[0]["problemtyp"]}">\n')
+            outputFile.write(f'    <parameters num_materials="{len(materialProperties)}">\n')
             outputFile.write('          <regions>\n')
-            for material, value in material_type.items():
-                outputFile.write(f'                  <marker id="{material}" material="{value}"/>\n')
+
+            # for material, value in material_type.items():
+            for i in range(len(materialProperties)):
+                outputFile.write(f'                  <marker id="{i}" material="{i}"/>\n')
             outputFile.write('          </regions>\n')
-            for material, value in material_type.items():
-                outputFile.write(f'          <material id="{material}" type="{materialProperties["material_type"]}">\n')
-                coef_str = ", ".join(str(c) for c in materialProperties["material_coef"])
+
+            for idx, mat in enumerate(materialProperties):
+                outputFile.write(f'          <material id="{idx}" type="{mat["material_type"]}">\n')
+                coef_str = ", ".join(str(c) for c in mat["material_coef"])
                 outputFile.write(f'                <coefficients>{coef_str}</coefficients>\n')
                 outputFile.write('          </material>\n')
-            # outputFile.write('        <material id="1" type="Guccione">\n')
-            # outputFile.write('              <coefficients>650, 6.62, 3.65, 2.65, 0, 200000.0</coefficients>\n')
-            # outputFile.write('        </material>\n')
-            outputFile.write(f'      <ninc>{materialProperties["num_increments"]}</ninc>\n')
+
+            outputFile.write(f'      <ninc>{materialProperties[0]["num_increments"]}</ninc>\n')
             outputFile.write('    </parameters>\n\n')
+
             outputFile.write('   <pressure>\n')
             for i in range(len(superficies_markers)-1):
-                outputFile.write(f'          <node id="{i+1}" marker="{superficies_markers[i]}" value="{materialProperties["pressure_value"]}"/>\n')
-            # outputFile.write('    <node id="2" marker="%d" value="%f"/>\n' % (materialProperties['pressure_marker'], materialProperties['pressure_value']))
-            # outputFile.write('    <node id="3" marker="%d" value="%f"/>\n' % (materialProperties['pressure_marker'], materialProperties['pressure_value']))
+                outputFile.write(f'          <node id="{i+1}" marker="{superficies_markers[i]}" value="{materialProperties[0]["pressure_value"]}"/>\n')
+                # outputFile.write(f'          <node id="{i+1}" marker="{superficies_markers[i]}" value="{materialProperties["pressure_value"]}"/>\n')
             outputFile.write('   </pressure>\n')
             outputFile.write('  <spring>\n')
-            outputFile.write(f'          <node id="1" marker="{superficies_markers[-1]}" value="{materialProperties["pressure_value"]}"/>\n')
+            outputFile.write(f'          <node id="1" marker="{superficies_markers[-1]}" value="{materialProperties[0]["pressure_value"]}"/>\n')
             outputFile.write('  </spring>\n\n')
             
             
-            # outputFile.write('<elasticity type="%s">\n' % materialProperties['problemtyp'])
-            # outputFile.write('  <parameters>\n')
-            # outputFile.write('  <material>%s</material>\n' % materialProperties['material_type'])
-            # outputFile.write('    <coefficients>%s</coefficients>\n' % str(materialProperties['material_coef']).replace('[','').replace(']',''))
-            # outputFile.write('    <ninc>%d</ninc>\n' % materialProperties['num_increments'])
-            # outputFile.write('  </parameters>\n')
-            # outputFile.write('  <pressure>\n')
-            # outputFile.write('    <node id="1" marker="%d" value="%f"/>\n' % (materialProperties['pressure_marker'], materialProperties['pressure_value']))
-            # outputFile.write('  </pressure>\n')
-
         else:
             outputFile.write('<elasticity>\n')
 
@@ -345,14 +336,14 @@ def gmsh2xml (gmshMesh, outputMesh, unit_factor, materialProperties, PVloopParam
     fibsize = np.shape(f)[0]
     
     # element_data section
-    outputFile.write('  <element_data type="%s">\n' % (materialProperties['fiber_type']))
+    outputFile.write('  <element_data type="%s">\n' % (materialProperties[0]['fiber_type']))
 
-    if materialProperties['fiber_type'] == 'fiber_transversely_isotropic':
+    if materialProperties[0]['fiber_type'] == 'fiber_transversely_isotropic':
         for i in range(fibsize):
             outputFile.write('    <element id="%d">\n' % (i))
             outputFile.write('        <fiber>%f,%f,%f</fiber>\n' % (f[i,0],f[i,1],f[i,2]))
             outputFile.write('    </element>\n')
-    elif materialProperties['fiber_type'] == 'fiber_orthotropic':
+    elif materialProperties[0]['fiber_type'] == 'fiber_orthotropic':
         for i in range(fibsize):
             outputFile.write('    <element id="%d">\n' % (i))
             outputFile.write('        <fiber>%f,%f,%f</fiber>\n' % (f[i,0],f[i,1],f[i,2]))
@@ -394,7 +385,33 @@ def gmsh2xml (gmshMesh, outputMesh, unit_factor, materialProperties, PVloopParam
 #           
 #            outputFile.write('  </pvloop_biv>\n')
 #        else:
-        outputFile.write('  <pvloop size="%s" total_time="%s" C_art="%f" R_per="%f" P_o="%f" p_art="%f" stroke_volume="%f" >\n' % (l[0], l[1], PVloopParams['C_art'], PVloopParams['R_per'], PVloopParams['P_o'], PVloopParams['p_art'], PVloopParams['stroke_volume'] ))
+        outputFile.write(
+            '  <pvloop size="%s" total_time="%s" C_art="%.6f" C_ven="%.6f" R_ao="%.1f" V_ven_zero="%.1f" P_o="%.1f" B_LA="%.3f" V_art_zero="%.1f" '
+            'tau="%.1f" R_ven="%.1f" A_LA="%.2f" R_mv="%.1f" E_es_LA="%.1f" p_art="%.1f" p_ven="%.1f" T_max="%.1f" R_per="%.1f" '
+            'stroke_volume="%.1f" T_ref="%.2f" >\n'
+            % (
+                l[0], l[1],
+                PVloopParams['C_art'],
+                PVloopParams['C_ven'],
+                PVloopParams['R_ao'],
+                PVloopParams['V_ven_zero'],
+                PVloopParams['P_o'],
+                PVloopParams['B_LA'],
+                PVloopParams['V_art_zero'],
+                PVloopParams['tau'],
+                PVloopParams['R_ven'],
+                PVloopParams['A_LA'],
+                PVloopParams['R_mv'],
+                PVloopParams['E_es_LA'],
+                PVloopParams['p_art'],
+                PVloopParams['p_ven'],
+                PVloopParams['T_max'],
+                PVloopParams['R_per'],
+                PVloopParams['stroke_volume'],
+                PVloopParams['T_ref'],
+            )
+        )
+
         size = int(l[0])
 
 
