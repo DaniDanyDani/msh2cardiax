@@ -239,7 +239,7 @@ def gmsh2xml (gmshMesh, outputMesh, unit_factor, materialProperties, PVloopParam
     print (prescDisplEPI)
     #problemtyp = 'THREE_DIM'
 
-    material_type = {'1': 1, '2': 2}
+    material_type = {'0': 0, '1': 1}
     superficies_markers = np.sort(np.unique(selem_markers))
 
 
