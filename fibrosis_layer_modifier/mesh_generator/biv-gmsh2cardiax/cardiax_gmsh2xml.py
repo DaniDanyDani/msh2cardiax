@@ -239,18 +239,49 @@ def gmsh2xml (gmshMesh, outputMesh, unit_factor, materialProperties, PVloopParam
     print (prescDisplEPI)
     #problemtyp = 'THREE_DIM'
 
+    material_type = {'1': 1, '2': 2}
+    superficies_markers = np.sort(np.unique(selem_markers))
+
 
     if(len(prescDispl) > 0):
         if(materialProperties['problemtyp'] is not None):
-            outputFile.write('<elasticity type="%s">\n' % materialProperties['problemtyp'])
-            outputFile.write('  <parameters>\n')
-            outputFile.write('  <material>%s</material>\n' % materialProperties['material_type'])
-            outputFile.write('    <coefficients>%s</coefficients>\n' % str(materialProperties['material_coef']).replace('[','').replace(']',''))
-            outputFile.write('    <ninc>%d</ninc>\n' % materialProperties['num_increments'])
+            
+            outputFile.write(f'<elasticity type="{materialProperties["problemtyp"]}">\n')
+            outputFile.write(f'  <parameters num_materials="{len(material_type)}">\n')
+            outputFile.write('    <regions>\n')
+            for material, value in material_type.items():
+                outputFile.write(f'      <marker id="{material}" material="{value}"/>\n')
+            outputFile.write('    </regions>\n')
+            for material, value in material_type.items():
+                outputFile.write(f'    <material id="{material}" type="{materialProperties["material_type"]}">\n')
+                coef_str = ", ".join(str(c) for c in materialProperties["material_coef"])
+                outputFile.write(f'      <coefficients>{coef_str}</coefficients>\n')
+                outputFile.write('    </material>\n')
+            # outputFile.write('        <material id="1" type="Guccione">\n')
+            # outputFile.write('              <coefficients>650, 6.62, 3.65, 2.65, 0, 200000.0</coefficients>\n')
+            # outputFile.write('        </material>\n')
+            outputFile.write(f'    <ninc>{materialProperties["num_increments"]}</ninc>\n')
             outputFile.write('  </parameters>\n')
             outputFile.write('  <pressure>\n')
-            outputFile.write('    <node id="1" marker="%d" value="%f"/>\n' % (materialProperties['pressure_marker'], materialProperties['pressure_value']))
+            for i in range(len(superficies_markers)-1):
+                outputFile.write(f'    <node id="{i+1}" marker="{superficies_markers[i]}" value="{materialProperties["pressure_value"]}"/>\n')
+            # outputFile.write('    <node id="2" marker="%d" value="%f"/>\n' % (materialProperties['pressure_marker'], materialProperties['pressure_value']))
+            # outputFile.write('    <node id="3" marker="%d" value="%f"/>\n' % (materialProperties['pressure_marker'], materialProperties['pressure_value']))
             outputFile.write('  </pressure>\n')
+            outputFile.write('  <spring>\n')
+            outputFile.write(f'    <node id="1" marker="{superficies_markers[-1]}" value="{materialProperties["pressure_value"]}"/>\n')
+            outputFile.write('  </spring>\n')
+            
+            
+            # outputFile.write('<elasticity type="%s">\n' % materialProperties['problemtyp'])
+            # outputFile.write('  <parameters>\n')
+            # outputFile.write('  <material>%s</material>\n' % materialProperties['material_type'])
+            # outputFile.write('    <coefficients>%s</coefficients>\n' % str(materialProperties['material_coef']).replace('[','').replace(']',''))
+            # outputFile.write('    <ninc>%d</ninc>\n' % materialProperties['num_increments'])
+            # outputFile.write('  </parameters>\n')
+            # outputFile.write('  <pressure>\n')
+            # outputFile.write('    <node id="1" marker="%d" value="%f"/>\n' % (materialProperties['pressure_marker'], materialProperties['pressure_value']))
+            # outputFile.write('  </pressure>\n')
 
         else:
             outputFile.write('<elasticity>\n')
