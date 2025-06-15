@@ -17,7 +17,7 @@ import numpy as np
 
 gmsh_etype_dim = {'1': 1, '2': 2, '3': 2, '4': 3, '5': 3}
 
-def gmsh2xml (gmshMesh, outputMesh, unit_factor, materialProperties, PVloopParams, PVloopFile=None, biv=False, markers_boundbox=None):
+def gmsh2xml (gmshMesh, outputMesh, unit_factor, materialProperties, bc_conditions, PVloopParams, PVloopFile=None, biv=False, markers_boundbox=None):
 
     xmlfilename = outputMesh
 
@@ -265,12 +265,13 @@ def gmsh2xml (gmshMesh, outputMesh, unit_factor, materialProperties, PVloopParam
             outputFile.write('    </parameters>\n\n')
 
             outputFile.write('   <pressure>\n')
-            for i in range(len(superficies_markers)-1):
-                outputFile.write(f'          <node id="{i+1}" marker="{superficies_markers[i]}" value="{materialProperties[0]["pressure_value"]}"/>\n')
+            for i in range(len(bc_conditions[0])):
+                outputFile.write(f'          <node id="{i+1}" marker="{superficies_markers[i]}" value="{bc_conditions[0][str(superficies_markers[i])]}"/>\n')
                 # outputFile.write(f'          <node id="{i+1}" marker="{superficies_markers[i]}" value="{materialProperties["pressure_value"]}"/>\n')
             outputFile.write('   </pressure>\n')
             outputFile.write('  <spring>\n')
-            outputFile.write(f'          <node id="1" marker="{superficies_markers[-1]}" value="{materialProperties[0]["pressure_value"]}"/>\n')
+            for i in range(len(bc_conditions[1])):
+                outputFile.write(f'          <node id="{i+1}" marker="{superficies_markers[i]}" value="{bc_conditions[1][str(superficies_markers[i])]}"/>\n')
             outputFile.write('  </spring>\n\n')
             
             

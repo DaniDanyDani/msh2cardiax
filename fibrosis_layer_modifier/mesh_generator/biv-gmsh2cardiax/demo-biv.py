@@ -9,9 +9,7 @@ material_healthy_params = {
    'material_type': 'Guccione', 
    'material_coef': [650, 6.62, 3.65, 2.65, 0, 200000.0], 
    'fiber_type': 'fiber_orthotropic', #'fiber_transversely_isotropic', 
-   'num_increments': 1, 
-   'pressure_marker': 30, 
-   'pressure_value': .0
+   'num_increments': 1
    }
 
 # Fibrotic
@@ -20,11 +18,24 @@ material_fibrotic_params = {
    'material_type': 'Guccione', 
    'material_coef': [650, 6.62, 3.65, 2.65, 0, 200000.0], 
    'fiber_type': 'fiber_orthotropic', #'fiber_transversely_isotropic', 
-   'num_increments': 1, 
-   'pressure_marker': 30, 
-   'pressure_value': .0
+   'num_increments': 1
    }
 
+pressure_bc = {
+   '10': .0,  # base
+   '20': .0,  # lv
+   '30': .0,  # rv
+   '40': .0   # epi
+}
+
+spring_bc = {
+   '10': .0,  # base
+   '20': .0,  # lv
+   '30': .0,  # rv
+   '40': .0   # epi
+}
+
+bc_conditions = [pressure_bc, spring_bc]
 material_params = [material_healthy_params, material_fibrotic_params]
 
 #material_params = {'problemtyp': 'THREE_DIM', 
@@ -79,7 +90,7 @@ if (not os.path.isfile(pvloop_data)):
 # convert from mm to m
 factor = 1e-3
 biv = True
-cg.gmsh2xml(gmsh_mesh, output_xml + '_cardiax.xml', factor, material_params,
+cg.gmsh2xml(gmsh_mesh, output_xml + '_cardiax.xml', factor, material_params, bc_conditions,
         pvloop_params, pvloop_data, biv)
 
 
