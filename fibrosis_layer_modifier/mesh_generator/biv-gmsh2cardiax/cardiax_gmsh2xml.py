@@ -265,13 +265,17 @@ def gmsh2xml (gmshMesh, outputMesh, unit_factor, materialProperties, bc_conditio
             outputFile.write('    </parameters>\n\n')
 
             outputFile.write('   <pressure>\n')
-            for i in range(len(bc_conditions[0])):
-                outputFile.write(f'          <node id="{i+1}" marker="{superficies_markers[i]}" value="{bc_conditions[0][str(superficies_markers[i])]}"/>\n')
+            
+            bc_pressure_keys = list(bc_conditions[0].keys())
+            for i in range(len(bc_pressure_keys)):
+                outputFile.write(f'          <node id="{i+1}" marker="{bc_pressure_keys[i]}" value="{bc_conditions[0][str(bc_pressure_keys[i])]}"/>\n')
                 # outputFile.write(f'          <node id="{i+1}" marker="{superficies_markers[i]}" value="{materialProperties["pressure_value"]}"/>\n')
             outputFile.write('   </pressure>\n')
             outputFile.write('  <spring>\n')
-            for i in range(len(bc_conditions[1])):
-                outputFile.write(f'          <node id="{i+1}" marker="{superficies_markers[i]}" value="{bc_conditions[1][str(superficies_markers[i])]}"/>\n')
+
+            bc_spring_keys = list(bc_conditions[1].keys())
+            for i in range(len(bc_spring_keys)):
+                outputFile.write(f'          <node id="{i+1}" marker="{bc_spring_keys[i]}" value="{bc_conditions[1][str(bc_spring_keys[i])]}"/>\n')
             outputFile.write('  </spring>\n\n')
             
             
