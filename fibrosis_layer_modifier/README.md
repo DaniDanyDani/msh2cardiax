@@ -6,7 +6,8 @@ Este projeto fornece um script Python para expandir ou reduzir regiões de fibro
 
 - Expansão da fibrose por um número definido de camadas celulares adjacentes.
 - Redução da fibrose, revertendo células de fibrose para tecido saudável se estiverem adjacentes a regiões não fibróticas.
-- Exportação dos resultados nos formatos `.vtk` e `.msh` (compatível com Gmsh).
+- Exportação dos resultados nos formatos `.vtk`, `.msh` (compatível com Gmsh) e `.xml` (compatível com o Cardiax).
+- É possível adaptar o formato do xml editando o arquivo `demo-biv.py` em `./mesh_generator/biv-gmsh2cardiax/demo-biv.py`
 
 ## Estrutura de Marcações
 
@@ -50,7 +51,6 @@ python main.py -i input_file_name -o output_file_name -n N
   - Positivo → expande a fibrose.  
   - Negativo → reduz a fibrose.  
   - Zero não é permitido.  
-
  
 ## Saídas
 - output.vtk: malha modificada com o campo CellEntityIds atualizado.
