@@ -104,12 +104,16 @@ parser.add_argument("-i", "--input", required=True, help="Input file name")
 parser.add_argument("-o", "--output", required=False, help="Output file name")
 parser.add_argument("-n", "--n_layers", type=int, required=True, help="Number of layers: positive to expand, negative to shrink")
 
+
+
 args = parser.parse_args()
 
 input_file = args.input
 n_layers = args.n_layers
 
 output_dir = os.getcwd() + '/output/'
+if not os.path.exists(output_dir):
+    os.makedirs(output_dir)
 # print(output_dir)
 output_file = output_dir + args.output
 # print(output_file)
