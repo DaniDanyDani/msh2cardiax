@@ -1,4 +1,4 @@
-name: gmsh-env
+name: fibrosis_layer_modifier
 channels:
   - conda-forge
   - defaults
