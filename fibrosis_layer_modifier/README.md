@@ -22,23 +22,24 @@ Este projeto fornece um script Python para expandir ou reduzir regiões de fibro
 ## Uso
 
 ### Requisitos
+- python 3+
+- Conda/Miniconda
 
-- Python 3.8+
-- Bibliotecas:
-  - `vtk`
-  - `tqdm`
-  - `argparse`
-  - `meshio`
-  - `gmsh`
-
-Instale as dependências com:
+### Instale as dependências com:
 
 ```bash
-pip install vtk tqdm meshio gmsh
+conda env create -f Dependencies.yml
 ```
 
 ### Execução
 
+Ative o ambiente conda:
+
+```bash
+conda activate fibrosis_layer_modifier
+```
+
+Execução:
 ```bash
 python main.py -i input_file_name -o output_file_name -n N
 ```
@@ -54,6 +55,7 @@ python main.py -i input_file_name -o output_file_name -n N
 ## Saídas
 - output.vtk: malha modificada com o campo CellEntityIds atualizado.
 - output.msh: versão .msh compatível com Gmsh com os nomes físicos das regiões.
+- output.xml: versão xml do modelo
 
 ## Exemplos
 Expandir a fibrose em 3 camadas:
