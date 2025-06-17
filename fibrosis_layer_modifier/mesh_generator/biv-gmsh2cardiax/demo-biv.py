@@ -3,6 +3,9 @@ import sys, time, os
 import numpy as np
 
 
+
+# Edite essa região com os parâmetros do xml =========================
+# ====================================================================
 # healthy
 material_healthy_params = {
    'problemtyp': 'THREE_DIM', 
@@ -38,13 +41,6 @@ spring_bc = {
 bc_conditions = [pressure_bc, spring_bc]
 material_params = [material_healthy_params, material_fibrotic_params]
 
-#material_params = {'problemtyp': 'THREE_DIM', 
-#        'material_type': 'HolzapfelOgden', 
-#        'material_coef': [2000, 3000, 2000, 1000, 9.242, 15.972, 10.446, 11.602, 0, 500000.0], 
-#        'fiber_type': 'fiber_orthotropic', 
-#        'num_increments': 100, 
-#        'pressure_marker': 30, 'pressure_value': 2000.0}
-
 pvloop_params = {
     'size': 901,
     'total_time': 0.900000,
@@ -68,7 +64,8 @@ pvloop_params = {
     'T_ref': 1.59
     }
 
-
+# ====================================================================
+# ====================================================================
 
 if (len(sys.argv) < 3):
     print("\n Usage: gmsh2xml <gmsh_mesh> <output_xml> <pvloop_data>\n")
