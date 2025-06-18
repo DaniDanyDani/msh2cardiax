@@ -14,8 +14,8 @@ Este projeto fornece um script Python para expandir ou reduzir regiões de fibro
 | Região    | ID  |
 | --------- | --- |
 | `base`    | 10  |
-| `ve`      | 20  |
-| `vd`      | 30  |
+| `ve`      | 30  |
+| `vd`      | 20  |
 | `epi`     | 40  |
 | `healthy` | 1   |
 | `fibrose` | 2   |
