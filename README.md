@@ -50,7 +50,7 @@ python main.py -i input_file_name -o output_file_name -n N
 - `-n`, `--n_layers`: Número de camadas:  
   - Positivo → expande a fibrose.  
   - Negativo → reduz a fibrose.  
-  - Zero não é permitido.  
+  - Zero → apenas converte a malha para o formato xml do cardiax. 
  
 ## Saídas
 - output.vtk: malha modificada com o campo CellEntityIds atualizado.

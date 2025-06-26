@@ -28,16 +28,16 @@ def gmsh2xml (gmshMesh, outputMesh, unit_factor, materialProperties, bc_conditio
     line = f.readline() # $EndMeshFormat
 
     line = f.readline() # $PhysicalNames
-    print(line)
+    # print(line)
     line = f.readline()
     for i in range(int(line)):
         line = f.readline()
     line = f.readline() # $EndPhysicalNames
-    print(line)
+    # print(line)
 
     # read nodes and write .pts file
     line = f.readline() # $Node
-    print(line)
+    # print(line)
     line = f.readline() # num_node
     num_nodes = int(line)
     pts = np.zeros((num_nodes,3))
@@ -50,14 +50,14 @@ def gmsh2xml (gmshMesh, outputMesh, unit_factor, materialProperties, bc_conditio
         pts[i,2] = z
 
     line = f.readline() # $EndNodes
-    print(line)
+    # print(line)
     print("Reading nodes...done")
 
     # read elements and
     line = f.readline() # $Elements
     line = f.readline() # num_elements
 
-    print(line)
+    # print(line)
 
     num_elements = int(line)
     elements = 0
@@ -95,7 +95,7 @@ def gmsh2xml (gmshMesh, outputMesh, unit_factor, materialProperties, bc_conditio
             elems.append( (n1,n2,n3) )
             #print("marker %d" % tags[0])
             elem_marker.append( tags[0] )
-            print(tags[0])
+            # print(tags[0])
             #felem.write("Tr %d %d %d 1\n" % (n1,n2,n3))
         elif (elem_type == 3): # quad
             elements = elements + 1
@@ -213,7 +213,7 @@ def gmsh2xml (gmshMesh, outputMesh, unit_factor, materialProperties, bc_conditio
 
     endoPoints = np.unique(endo_indices)
 
-    np.savetxt('endo_indices.txt', endoPoints, fmt='%d')
+    # np.savetxt('endo_indices.txt', endoPoints, fmt='%d')
 
 
     base_indices = []

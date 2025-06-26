@@ -111,14 +111,18 @@ args = parser.parse_args()
 input_file = args.input
 n_layers = args.n_layers
 
-output_dir = os.getcwd() + '/output/'
+output_dir = os.getcwd() + f'/output/'
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 # print(output_dir)
-output_file = output_dir + args.output
+
+output_file = output_dir + f"{args.output}/" + args.output
+if not os.path.exists(output_file):
+    os.makedirs(output_file)
 # print(output_file)
 
-demo_biv_dir = os.getcwd() + '/mesh_generator/biv-gmsh2cardiax'
+home_dir = os.getcwd()
+demo_biv_dir = home_dir + '/mesh_generator/biv-gmsh2cardiax'
 
 print("\nConverting .msh in .vtk file")
 gmsh.initialize()
@@ -135,7 +139,9 @@ if n_layers > 0:
 elif n_layers < 0:
     shrink = True
     print(f"\n{n_layers=}: Shrinking fibrosis.")
-else:
+elif n_layers == 0:
+    print(f"\n{n_layers=}: Only converting .msh in .xml file")
+    os.system(f'python {demo_biv_dir}/demo-biv.py {input_file}.msh {output_file} {demo_biv_dir}/end_sistole_pvloop_data.txt')
     sys.exit(1)
 
 
@@ -238,12 +244,18 @@ for layer in range(abs(n_layers)):
         print(f"In iteration {layer + 1}, there is no more healthy tissue. Saving mesh and exiting.")
         # write_vtk(output_mesh, output_file)
         write_msh_from_vtk(output_mesh, output_file)
+
+        print(f"\nConverting .msh in .xml file")
+        os.system(f'python {demo_biv_dir}/demo-biv.py {output_file}.msh {output_file} {demo_biv_dir}/end_sistole_pvloop_data.txt')
         sys.exit(0)
 
     if shrink and not has_fibrosis:
         print(f"In iteration {layer + 1}, there is no more fibrosis. Saving mesh and exiting.")
         # write_vtk(output_mesh, output_file)
         write_msh_from_vtk(output_mesh, output_file)
+        
+        print(f"\nConverting .msh in .xml file")
+        os.system(f'python {demo_biv_dir}/demo-biv.py {output_file}.msh {output_file} {demo_biv_dir}/end_sistole_pvloop_data.txt')
         sys.exit(0)
 
 
@@ -251,4 +263,5 @@ for layer in range(abs(n_layers)):
 write_msh_from_vtk(output_mesh, output_file)
 
 print(f"\nConverting .msh in .xml file")
-os.system(f'python {demo_biv_dir}/demo-biv.py {output_file}.msh {output_file} {demo_biv_dir}/pvloop_data.txt')
+os.system(f'python {demo_biv_dir}/demo-biv.py {output_file}.msh {output_file} {demo_biv_dir}/end_sistole_pvloop_data.txt')
+
