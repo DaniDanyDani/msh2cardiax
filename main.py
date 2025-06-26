@@ -38,6 +38,12 @@ def write_vtk(mesh, output_file):
     print(f"Mesh .vtk write in: {output_file}.vtk")
 
 
+def mov_files_to_output_dir(file_name, home_dir, output_dir):
+    prefixos = [".xdmf", ".h5"]
+    
+    for pref in prefixos:
+        os.system(f"mv -f {home_dir}/{file_name}{pref} {output_dir}/")
+
 def write_msh_from_vtk(mesh, filename_msh, field_name="CellEntityIds"):
     with open(filename_msh+'.msh', "w") as f:
         f.write("$MeshFormat\n2.0 0 8\n$EndMeshFormat\n")
@@ -142,7 +148,12 @@ elif n_layers < 0:
 elif n_layers == 0:
     print(f"\n{n_layers=}: Only converting .msh in .xml file")
     os.system(f'python {demo_biv_dir}/demo-biv.py {input_file}.msh {output_file} {demo_biv_dir}/end_sistole_pvloop_data.txt')
-    sys.exit(1)
+    mov_files_to_output_dir("ffun", home_dir, output_file)
+    mov_files_to_output_dir("mesh", home_dir, output_file)
+    mov_files_to_output_dir("triangle_mesh", home_dir, output_file)
+    mov_files_to_output_dir("tetra_mesh", home_dir, output_file)
+    mov_files_to_output_dir(f"{input_file}.msh", home_dir, output_file)
+    sys.exit(0)
 
 
 # Input mesh
@@ -265,3 +276,5 @@ write_msh_from_vtk(output_mesh, output_file)
 print(f"\nConverting .msh in .xml file")
 os.system(f'python {demo_biv_dir}/demo-biv.py {output_file}.msh {output_file} {demo_biv_dir}/end_sistole_pvloop_data.txt')
 
+print(home_dir)
+# os.system(f"mv {home_dir}")
