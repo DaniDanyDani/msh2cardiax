@@ -17,13 +17,9 @@ import numpy as np
 
 gmsh_etype_dim = {'1': 1, '2': 2, '3': 2, '4': 3, '5': 3}
 
-def gmsh2xml (gmshMesh, outputMesh, aha_array, unit_factor, materialProperties, bc_conditions, PVloopParams, PVloopFile=None, biv=False, markers_boundbox=None):
+def gmsh2xml (gmshMesh, outputMesh, unit_factor, materialProperties, bc_conditions, PVloopParams, PVloopFile=None, biv=False, markers_boundbox=None, aha_list=None):
 
     xmlfilename = outputMesh
-
-    aha = open(aha_mesh)
-    while True:
-        line_aha_mesh = aha.readline
 
     # read header from .msh file
     f = open(gmshMesh)

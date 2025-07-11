@@ -4,14 +4,14 @@ import numpy as np
 
 
 def read_parcellation_from_vtu(filename):
-    with open(filename, "r") as f:
+    with open(filename+".vtu", "r") as f:
         lines = f.readlines()
 
     parcellation_values = []
     inside_parcellation = False
 
     for line in lines:
-        if 'Name="parcellation"' in line:
+        if 'Name="parcellation_cells"' in line:
             inside_parcellation = True
             continue
         if inside_parcellation:
@@ -94,6 +94,7 @@ gmsh_mesh = sys.argv[1]
 output_xml = sys.argv[2]
 pvloop_data = sys.argv[3]
 aha_mesh = sys.argv[4]
+print(f"{aha_mesh=}")
 
 if (not os.path.isfile(gmsh_mesh)):
    print("\n Error: the input gmsh %s does not exist.\n" % (gmsh_mesh))
@@ -103,18 +104,17 @@ if (not os.path.isfile(pvloop_data)):
    print("\n Error: the input pvloop_data %s does not exist.\n" % (pvloop_data))
    sys.exit(-1)
 
-
-# Exemplo de uso
-aha_list = read_parcellation_from_vtu(aha_mesh)
-print(f"{aha_list[:20]=}")  # Mostra os primeiros 20 valo
-
+aha_list = None
+if aha_mesh and aha_mesh!= "None":
+    aha_list = read_parcellation_from_vtu(aha_mesh)
+    print(f"{aha_list[:5]=}")  # Mostra os primeiros 5 valo
 
 
 # convert from mm to m
 factor = 1e-3
 biv = True
-cg.gmsh2xml(gmsh_mesh, output_xml + '_cardiax.xml', aha_list, factor, material_params, bc_conditions,
-        pvloop_params, pvloop_data, biv)
+cg.gmsh2xml(gmsh_mesh, output_xml + '_cardiax.xml', factor, material_params, bc_conditions,
+        pvloop_params, pvloop_data, biv, aha_list)
 
 
 
