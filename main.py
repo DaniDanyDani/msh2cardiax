@@ -106,9 +106,10 @@ def write_msh_from_vtk(mesh, filename_msh, field_name="CellEntityIds"):
         print(f"Mesh .msh write in: {filename_msh}.msh")
 
 parser = argparse.ArgumentParser(description="Expand or shrink fibrosis in a VTK heart mesh.")
-parser.add_argument("-i", "--input", required=True, help="Input file name")
-parser.add_argument("-o", "--output", required=False, help="Output file name")
-parser.add_argument("-n", "--n_layers", type=int, required=True, help="Number of layers: positive to expand, negative to shrink")
+parser.add_argument("-i", "--input", required=True, help="Input file name.")
+parser.add_argument("-o", "--output", required=True, help="Output file name.")
+parser.add_argument("-aha", "--aha_parcellation", required=False, default='None', help="Input vtu file name with aha parcelation.")
+parser.add_argument("-n", "--n_layers", type=int, required=True, help="Number of layers: positive to expand, negative to shrink and zero to only convert.")
 
 
 
@@ -284,9 +285,15 @@ for layer in range(abs(n_layers)):
 write_msh_from_vtk(output_mesh, output_file)
 
 print(f"\nConverting .msh in .xml file")
-os.system(f'python {demo_biv_dir}/demo-biv.py {output_file}.msh {output_file} {demo_biv_dir}/end_sistole_pvloop_data.txt')
+if args.aha_parcellation == "None":
+    os.system(f'python {demo_biv_dir}/demo-biv.py {output_file}.msh {output_file} {demo_biv_dir}/end_sistole_pvloop_data.txt')
+else:
+    os.system(f'python {demo_biv_dir}/demo-biv.py {output_file}.msh {output_file} {demo_biv_dir}/end_sistole_pvloop_data.txt {home_dir}/{args.aha_parcellation}.vtu')
+
 mov_files_to_output_dir("ffun", home_dir, output_file)
 mov_files_to_output_dir("mesh", home_dir, output_file)
 mov_files_to_output_dir("triangle_mesh", home_dir, output_file)
 mov_files_to_output_dir("tetra_mesh", home_dir, output_file)
 mov_files_to_output_dir(f"{input_file}.msh", home_dir, output_file)
+if args.aha_parcellation != "None":
+    mov_files_to_output_dir(f"{home_dir}/{args.aha_parcellation}.vtu", home_dir, output_file)
