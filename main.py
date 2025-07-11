@@ -108,12 +108,13 @@ def write_msh_from_vtk(mesh, filename_msh, field_name="CellEntityIds"):
 parser = argparse.ArgumentParser(description="Expand or shrink fibrosis in a VTK heart mesh.")
 parser.add_argument("-i", "--input", required=True, help="Input file name.")
 parser.add_argument("-o", "--output", required=True, help="Output file name.")
-parser.add_argument("-aha", "--aha_parcellation", required=False, default='None', help="Input vtu file name with aha parcelation.")
+parser.add_argument("-aha", "--aha_parcellation", default=None, help="Input vtu file name with aha parcelation.")
 parser.add_argument("-n", "--n_layers", type=int, required=True, help="Number of layers: positive to expand, negative to shrink and zero to only convert.")
 
 
 
 args = parser.parse_args()
+aha_mesh = args.aha_parcellation
 
 input_file = args.input
 n_layers = args.n_layers
@@ -148,7 +149,10 @@ elif n_layers < 0:
     print(f"\n{n_layers=}: Shrinking fibrosis.")
 elif n_layers == 0:
     print(f"\n{n_layers=}: Only converting .msh in .xml file")
-    os.system(f'python {demo_biv_dir}/demo-biv.py {input_file}.msh {output_file} {demo_biv_dir}/end_sistole_pvloop_data.txt')
+    if aha_mesh and aha_mesh!=None:
+        os.system(f'python {demo_biv_dir}/demo-biv.py {input_file}.msh {output_file} {demo_biv_dir}/end_sistole_pvloop_data.txt {aha_mesh}')
+    else:
+        os.system(f'python {demo_biv_dir}/demo-biv.py {input_file}.msh {output_file} {demo_biv_dir}/end_sistole_pvloop_data.txt "None"')
     mov_files_to_output_dir("ffun", home_dir, output_file)
     mov_files_to_output_dir("mesh", home_dir, output_file)
     mov_files_to_output_dir("triangle_mesh", home_dir, output_file)
@@ -283,17 +287,21 @@ for layer in range(abs(n_layers)):
 
 # write_vtk(output_mesh, output_file)
 write_msh_from_vtk(output_mesh, output_file)
+#print(f"{args.aha_parcellation=}")
+
 
 print(f"\nConverting .msh in .xml file")
-if args.aha_parcellation == "None":
-    os.system(f'python {demo_biv_dir}/demo-biv.py {output_file}.msh {output_file} {demo_biv_dir}/end_sistole_pvloop_data.txt')
+print(f"{aha_mesh=}")
+
+if aha_mesh and aha_mesh!=None:
+    os.system(f'python {demo_biv_dir}/demo-biv.py {output_file}.msh {output_file} {demo_biv_dir}/end_sistole_pvloop_data.txt {aha_mesh}')
 else:
-    os.system(f'python {demo_biv_dir}/demo-biv.py {output_file}.msh {output_file} {demo_biv_dir}/end_sistole_pvloop_data.txt {home_dir}/{args.aha_parcellation}.vtu')
+    os.system(f'python {demo_biv_dir}/demo-biv.py {output_file}.msh {output_file} {demo_biv_dir}/end_sistole_pvloop_data.txt "None"')
 
 mov_files_to_output_dir("ffun", home_dir, output_file)
 mov_files_to_output_dir("mesh", home_dir, output_file)
 mov_files_to_output_dir("triangle_mesh", home_dir, output_file)
 mov_files_to_output_dir("tetra_mesh", home_dir, output_file)
 mov_files_to_output_dir(f"{input_file}.msh", home_dir, output_file)
-if args.aha_parcellation != "None":
+if args.aha_parcellation and args.aha_parcellation.lower() != "none":
     mov_files_to_output_dir(f"{home_dir}/{args.aha_parcellation}.vtu", home_dir, output_file)

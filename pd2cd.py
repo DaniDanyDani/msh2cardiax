@@ -40,4 +40,5 @@ mesh.cell_data = {
     name_parcellation_cells: [np.array(parcellation_cells)]
 }
 
-mesh.write(args.output_vtu)
+mesh.write(args.output_vtu, file_format="vtu", binary=False)
+
