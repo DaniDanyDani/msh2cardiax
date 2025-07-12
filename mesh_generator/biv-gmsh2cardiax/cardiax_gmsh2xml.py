@@ -17,7 +17,7 @@ import numpy as np
 
 gmsh_etype_dim = {'1': 1, '2': 2, '3': 2, '4': 3, '5': 3}
 
-def gmsh2xml (gmshMesh, outputMesh, unit_factor, materialProperties, bc_conditions, PVloopParams, PVloopFile=None, biv=False, markers_boundbox=None, aha_list=None):
+def gmsh2xml (gmshMesh, outputMesh, aha_list, unit_factor, materialProperties, bc_conditions, PVloopParams, PVloopFile=None, biv=False, markers_boundbox=None):
 
     xmlfilename = outputMesh
 
@@ -328,8 +328,15 @@ def gmsh2xml (gmshMesh, outputMesh, unit_factor, materialProperties, bc_conditio
         #if(eldim < num_dim):
         #    boundary.append( np.array(elems[i][:],dtype=int)-1 )
 #        mark = get_marker(pts, velem[i][:], markers_boundbox)
-        outputFile.write('    <element id="%d" marker="%d" ' % (i,
-            velem_markers[i]))
+        if aha_list != None and len(aha_list) == num_elements:
+            # print(f"\n\n\n{aha_list[:10]=}\n\n\n")
+            outputFile.write('    <element id="%d" marker="%d" aha="%d" ' % (i, velem_markers[i], aha_list[i]))
+        elif aha_list != None and len(aha_list) != num_elements:
+            print(f"Error: Number of aha parcellations is not equal the number of elements.")
+            sys.exit(1)
+        else:
+            outputFile.write('    <element id="%d" marker="%d" aha="0" ' % (i, velem_markers[i]))
+
         write_element(outputFile, velem[i][:] )
     outputFile.write('  </elements>\n')
 

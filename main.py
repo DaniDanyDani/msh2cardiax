@@ -37,8 +37,12 @@ def write_vtk(mesh, output_file):
     SaveUnstructuredGrid(mesh, output_file+'.vtk')
     print(f"Mesh .vtk write in: {output_file}.vtk")
 
+def mov_mesh_files(mesh_name, home_dir, output_dir):
+    os.system(f"mv -f {home_dir}/{mesh_name} {output_dir}/")
 
-def mov_files_to_output_dir(file_name, home_dir, output_dir):
+    
+
+def mov_files(file_name, home_dir, output_dir):
     prefixos = [".xdmf", ".h5"]
     
     for pref in prefixos:
@@ -153,11 +157,11 @@ elif n_layers == 0:
         os.system(f'python {demo_biv_dir}/demo-biv.py {input_file}.msh {output_file} {demo_biv_dir}/end_sistole_pvloop_data.txt {aha_mesh}')
     else:
         os.system(f'python {demo_biv_dir}/demo-biv.py {input_file}.msh {output_file} {demo_biv_dir}/end_sistole_pvloop_data.txt "None"')
-    mov_files_to_output_dir("ffun", home_dir, output_file)
-    mov_files_to_output_dir("mesh", home_dir, output_file)
-    mov_files_to_output_dir("triangle_mesh", home_dir, output_file)
-    mov_files_to_output_dir("tetra_mesh", home_dir, output_file)
-    mov_files_to_output_dir(f"{input_file}.msh", home_dir, output_file)
+    mov_files("ffun", home_dir, output_file)
+    mov_files("mesh", home_dir, output_file)
+    mov_files("triangle_mesh", home_dir, output_file)
+    mov_files("tetra_mesh", home_dir, output_file)
+    mov_files(f"{input_file}.msh", home_dir, output_file)
     sys.exit(0)
 
 
@@ -263,11 +267,11 @@ for layer in range(abs(n_layers)):
 
         print(f"\nConverting .msh in .xml file")
         os.system(f'python {demo_biv_dir}/demo-biv.py {output_file}.msh {output_file} {demo_biv_dir}/end_sistole_pvloop_data.txt')
-        mov_files_to_output_dir("ffun", home_dir, output_file)
-        mov_files_to_output_dir("mesh", home_dir, output_file)
-        mov_files_to_output_dir("triangle_mesh", home_dir, output_file)
-        mov_files_to_output_dir("tetra_mesh", home_dir, output_file)
-        mov_files_to_output_dir(f"{input_file}.msh", home_dir, output_file)
+        mov_files("ffun", home_dir, output_file)
+        mov_files("mesh", home_dir, output_file)
+        mov_files("triangle_mesh", home_dir, output_file)
+        mov_files("tetra_mesh", home_dir, output_file)
+        mov_files(f"{input_file}.msh", home_dir, output_file)
         sys.exit(0)
 
     if shrink and not has_fibrosis:
@@ -277,11 +281,11 @@ for layer in range(abs(n_layers)):
         
         print(f"\nConverting .msh in .xml file")
         os.system(f'python {demo_biv_dir}/demo-biv.py {output_file}.msh {output_file} {demo_biv_dir}/end_sistole_pvloop_data.txt')
-        mov_files_to_output_dir("ffun", home_dir, output_file)
-        mov_files_to_output_dir("mesh", home_dir, output_file)
-        mov_files_to_output_dir("triangle_mesh", home_dir, output_file)
-        mov_files_to_output_dir("tetra_mesh", home_dir, output_file)
-        mov_files_to_output_dir(f"{input_file}.msh", home_dir, output_file)
+        mov_files("ffun", home_dir, output_file)
+        mov_files("mesh", home_dir, output_file)
+        mov_files("triangle_mesh", home_dir, output_file)
+        mov_files("tetra_mesh", home_dir, output_file)
+        mov_files(f"{input_file}.msh", home_dir, output_file)
         sys.exit(0)
 
 
@@ -298,10 +302,11 @@ if aha_mesh and aha_mesh!=None:
 else:
     os.system(f'python {demo_biv_dir}/demo-biv.py {output_file}.msh {output_file} {demo_biv_dir}/end_sistole_pvloop_data.txt "None"')
 
-mov_files_to_output_dir("ffun", home_dir, output_file)
-mov_files_to_output_dir("mesh", home_dir, output_file)
-mov_files_to_output_dir("triangle_mesh", home_dir, output_file)
-mov_files_to_output_dir("tetra_mesh", home_dir, output_file)
-mov_files_to_output_dir(f"{input_file}.msh", home_dir, output_file)
+mov_files("ffun", home_dir, output_file)
+mov_files("mesh", home_dir, output_file)
+mov_files("triangle_mesh", home_dir, output_file)
+mov_files("tetra_mesh", home_dir, output_file)
+mov_files("line_mesh", home_dir, output_file)
+mov_mesh_files(f"{input_file}.msh", home_dir, output_file)
 if args.aha_parcellation and args.aha_parcellation.lower() != "none":
-    mov_files_to_output_dir(f"{home_dir}/{args.aha_parcellation}.vtu", home_dir, output_file)
+    mov_mesh_files(f"{home_dir}/{args.aha_parcellation}.vtu", home_dir, output_file)

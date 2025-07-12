@@ -94,7 +94,7 @@ gmsh_mesh = sys.argv[1]
 output_xml = sys.argv[2]
 pvloop_data = sys.argv[3]
 aha_mesh = sys.argv[4]
-print(f"{aha_mesh=}")
+# print(f"{aha_mesh=}")
 
 if (not os.path.isfile(gmsh_mesh)):
    print("\n Error: the input gmsh %s does not exist.\n" % (gmsh_mesh))
@@ -107,14 +107,15 @@ if (not os.path.isfile(pvloop_data)):
 aha_list = None
 if aha_mesh and aha_mesh!= "None":
     aha_list = read_parcellation_from_vtu(aha_mesh)
-    print(f"{aha_list[:5]=}")  # Mostra os primeiros 5 valo
+    # print(f"{aha_list[:5]=}")  # Mostra os primeiros 5 valo
 
 
 # convert from mm to m
 factor = 1e-3
 biv = True
-cg.gmsh2xml(gmsh_mesh, output_xml + '_cardiax.xml', factor, material_params, bc_conditions,
-        pvloop_params, pvloop_data, biv, aha_list)
+print(f"{aha_list[:5]=}")  # Mostra os primeiros 5 valo
+cg.gmsh2xml(gmsh_mesh, output_xml + '_cardiax.xml', aha_list, factor, material_params, bc_conditions,
+        pvloop_params, pvloop_data, biv)
 
 
 
