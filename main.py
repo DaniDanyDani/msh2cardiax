@@ -1,5 +1,5 @@
 import argparse
-from tqdm import tqdm
+from tqdm import tqdm # type: ignore
 
 from vtkmodules.vtkCommonCore import vtkIdList
 from vtkmodules.vtkIOLegacy import vtkPolyDataReader
@@ -8,7 +8,7 @@ from vtkmodules.vtkIOXML import vtkXMLUnstructuredGridWriter
 
 import vtk
 import sys
-import gmsh
+import gmsh # type: ignore
 import os
 
 
