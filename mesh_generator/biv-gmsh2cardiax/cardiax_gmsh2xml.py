@@ -329,7 +329,7 @@ def gmsh2xml (gmshMesh, outputMesh, aha_list, unit_factor, materialProperties, b
         #    boundary.append( np.array(elems[i][:],dtype=int)-1 )
 #        mark = get_marker(pts, velem[i][:], markers_boundbox)
         if aha_list != None and len(aha_list) == num_elements:
-            # print(f"\n\n\n{aha_list[:10]=}\n\n\n")
+            # print(f"\n\n\n{aha_list[:10]=}\n\n\n") 
             outputFile.write('    <element id="%d" marker="%d" aha="%d" ' % (i, velem_markers[i], aha_list[i]))
         elif aha_list != None and len(aha_list) != num_elements:
             print(f"Error: Number of aha parcellations is not equal the number of elements.")

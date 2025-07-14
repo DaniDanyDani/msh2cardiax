@@ -113,7 +113,7 @@ if aha_mesh and aha_mesh!= "None":
 # convert from mm to m
 factor = 1e-3
 biv = True
-print(f"{aha_list[:5]=}")  # Mostra os primeiros 5 valo
+# print(f"{aha_list[:5]=}")  # Mostra os primeiros 5 valo
 cg.gmsh2xml(gmsh_mesh, output_xml + '_cardiax.xml', aha_list, factor, material_params, bc_conditions,
         pvloop_params, pvloop_data, biv)
 

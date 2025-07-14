@@ -25,7 +25,18 @@ for cell_id, cell_points in enumerate(cells_connectivity):
 
     contagem = Counter(parcellation_list)
     mais_frequente, freq = contagem.most_common(1)[0]
-    parcellation_cells.append(mais_frequente)
+    if mais_frequente==19:
+        parcellation_cells.append(2)
+    elif mais_frequente==20:
+        parcellation_cells.append(3)
+    elif mais_frequente==25:
+        parcellation_cells.append(8)
+    elif mais_frequente==26:
+        parcellation_cells.append(9)
+    elif mais_frequente==31:
+        parcellation_cells.append(14)
+    else:
+        parcellation_cells.append(mais_frequente)
 
     if cell_id == 0:
         print("Formato das conectividades das células")
