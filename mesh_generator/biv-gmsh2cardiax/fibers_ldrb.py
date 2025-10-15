@@ -78,10 +78,18 @@ def create_fiber(meshname, biv):
 
     ldrb_markers = {
         "base": 10,
+        "rv": 20,
         "lv": 30,
-        "epi": 40,
-        "rv": 20
+        "epi": 40
     }
+
+    mesh_markers = {
+        "base_lv": 50,
+        "base_rv": 60
+    }
+
+    markers_functions.ffun.array()[markers_functions.ffun.array() == mesh_markers["base_lv"]] = ldrb_markers["base"]
+    markers_functions.ffun.array()[markers_functions.ffun.array() == mesh_markers["base_rv"]] = ldrb_markers["base"]
 
     # Choose space for the fiber fields
     # This is a string on the form {family}_{degree}

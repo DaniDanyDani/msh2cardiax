@@ -36,8 +36,9 @@ def gmsh2xml (gmshMesh, outputMesh, aha_list, unit_factor, materialProperties, b
     # print(line)
 
     # read nodes and write .pts file
+    # while line != '$Nodes':
     line = f.readline() # $Node
-    # print(line)
+    # print(f"{line=}")
     line = f.readline() # num_node
     num_nodes = int(line)
     pts = np.zeros((num_nodes,3))

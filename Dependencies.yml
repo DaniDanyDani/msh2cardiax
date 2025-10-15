@@ -1,4 +1,4 @@
-name: fibrosis_layer_modifier
+name: msh2cardiax
 channels:
   - conda-forge
   - defaults

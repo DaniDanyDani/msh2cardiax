@@ -87,7 +87,7 @@ pvloop_params = {
 # ====================================================================
 
 if (len(sys.argv) < 3):
-    print("\n Usage: gmsh2xml <gmsh_mesh> <output_xml> <pvloop_data>\n")
+    print("\n Usage: gmsh2xml <gmsh_mesh> <output_xml> <pvloop_data> <aha_parcellation>\n")
     sys.exit(-1)
 
 gmsh_mesh = sys.argv[1]
