@@ -6,11 +6,13 @@
 #
 
 import dolfin as df
+import numpy as np
 
 import ldrb
 
 import argparse
 import cardiac_geometries
+import meshio
 
 
 def get_physical_region(fname):
@@ -50,7 +52,7 @@ def solve_laplace(mesh, boundary_markers, boundary_values, ldrb_markers):
     dx = df.Measure('dx', domain=mesh)
 
     # Define variational problem
-    u = df.TrialFunction(V)
+    u = df.mesh_generator/biv-gmsh2cardiax/fibers_ldrb.pyTrialFunction(V)
     v = df.TestFunction(V)
     f = df.Constant(0.0)   
     a = df.dot(df.grad(u), df.grad(v))*dx  
@@ -75,6 +77,9 @@ def create_fiber(meshname, biv):
 
     mesh, markers, markers_functions = cardiac_geometries.gmsh2dolfin(meshname)
 
+    print(markers)
+    print(np.unique(markers_functions.ffun.array()[:]))
+
 
     ldrb_markers = {
         "base": 10,
@@ -84,12 +89,21 @@ def create_fiber(meshname, biv):
     }
 
     mesh_markers = {
-        "base_lv": 50,
-        "base_rv": 60
+        "baseLV": 60,
+        "baseRV": 50
     }
 
-    markers_functions.ffun.array()[markers_functions.ffun.array() == mesh_markers["base_lv"]] = ldrb_markers["base"]
-    markers_functions.ffun.array()[markers_functions.ffun.array() == mesh_markers["base_rv"]] = ldrb_markers["base"]
+    # with df.XDMFFile(mesh.mpi_comm(), "teste.xdmf") as xdmf:
+    #     xdmf.parameters.update(
+    #     {
+    #         "functions_share_mesh": True,
+    #         "rewrite_function_mesh": False
+    #     })
+    #     xdmf.write(markers_functions.ffun)
+
+
+    markers_functions.ffun.array()[markers_functions.ffun.array() == mesh_markers["baseLV"]] = ldrb_markers["base"]
+    markers_functions.ffun.array()[markers_functions.ffun.array() == mesh_markers["baseRV"]] = ldrb_markers["base"]
 
     # Choose space for the fiber fields
     # This is a string on the form {family}_{degree}
