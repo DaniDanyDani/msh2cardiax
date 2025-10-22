@@ -143,26 +143,15 @@ def extract_border_and_gradient(vtk_input_filename, csv_output_filename):
 
 
 if __name__ == '__main__':
-    # --- CONFIGURAÇÃO ---
-    # Coloque o nome do seu arquivo VTK aqui
-    INPUT_VTK_FILE = 'lv.vtk' 
-    # Nome do arquivo CSV que será gerado
-    OUTPUT_CSV_FILE = 'lv_edge_node_start_vectors.csv'
-
-    # Para testar, vamos criar um arquivo VTK falso em formato de cilindro aberto
-    # print("Criando um arquivo VTK de teste ('lv.vtk')...")
-    # cylinder = vtk.vtkCylinderSource()
-    # cylinder.SetResolution(50)
-    # cylinder.SetHeight(10.0)
-    # cylinder.SetRadius(5.0)
-    # cylinder.CappingOff() # Importante: sem as tampas para ter bordas
-    # cylinder.Update()
-    
-    # writer = vtk.vtkPolyDataWriter()
-    # writer.SetFileName(INPUT_VTK_FILE)
-    # writer.SetInputData(cylinder.GetOutput())
-    # writer.Write()
-    # print("Arquivo de teste criado.")
-
     # Executa a função principal
+    INPUT_VTK_FILE = 'lv.vtk' 
+    OUTPUT_CSV_FILE = 'lv_edge_node_start_vectors.csv'
+    extract_border_and_gradient(INPUT_VTK_FILE, OUTPUT_CSV_FILE)
+
+    INPUT_VTK_FILE = 'rv.vtk' 
+    OUTPUT_CSV_FILE = 'rv_edge_node_start_vectors.csv'
+    extract_border_and_gradient(INPUT_VTK_FILE, OUTPUT_CSV_FILE)
+
+    INPUT_VTK_FILE = 'epi.vtk' 
+    OUTPUT_CSV_FILE = 'epi_edge_node_start_vectors.csv'
     extract_border_and_gradient(INPUT_VTK_FILE, OUTPUT_CSV_FILE)

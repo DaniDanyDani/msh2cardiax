@@ -4,6 +4,7 @@ channels:
   - defaults
 dependencies:
   - python=3.13
+  - pandas
   - vtk=9.4.2
   - fenics=2019.1.0=ha254b1b_58
   - ldrb=2023.5.0

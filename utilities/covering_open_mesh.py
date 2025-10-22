@@ -172,11 +172,11 @@ if threed_profile:
     plt.show()
 
 if rodero_05_lvendocardium:
-    vtk_names = ['lv.vtk', 'lv.vtk']
-    edge_names = ['lv_edge_node_start_vectors.csv', 'lv_edge_node_start_vectors.csv']
-    save_names = ['lv_cap_down.txt', 'lv_cap_up.txt']
-    lid_rise_percentages = [0.015, 0.015]
-    normal_vectors = [np.array([0, 0, -1]), np.array([0, 0, 1])]
+    vtk_names = ['lv.vtk', 'rv.vtk', 'epi.vtk']
+    edge_names = ['lv_edge_node_start_vectors.csv', 'rv_edge_node_start_vectors.csv', 'epi_edge_node_start_vectors.csv']
+    save_names = ['lv_cap.txt', 'rv_cap.txt', 'epi_cap.txt']
+    lid_rise_percentages = [0.15, 0.15, 0.2]
+    normal_vectors = [np.array([0, 0, 1]), np.array([0, 0, 1]), np.array([0, 0, 1])]
     # vtk_names = ['rv.vtk']
     # edge_names = ['rv_endo_edge_node_start_vectors.csv']
     # save_names = ['rvendo_cap_and_surface.txt']
