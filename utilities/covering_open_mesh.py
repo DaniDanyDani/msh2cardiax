@@ -85,13 +85,107 @@ def generate_cap_surface_data(edge_nodes, start_vectors, longitudinal_vector, li
         data = np.concatenate((data,curve))
     data = data[1:,:]
     return data
+# def generate_cap_surface_data(edge_nodes, start_vectors, longitudinal_vector,
+#                               lid_rise, flat_percentage, n_points_per_curve = 100):
+#     """
+#     Gera uma nuvem de pontos para a tampa, controlada pelo
+#     NÚMERO de pontos por raio, em vez da resolução.
+#     """
+    
+#     middle_coord = np.mean(edge_nodes, axis=0)
+#     data = np.array([[0, 0, 0]]) # Array placeholder para os pontos da tampa
 
+#     # Garante que o número de pontos é um inteiro
+#     n_points = int(n_points_per_curve)
+    
+#     # Precisamos de pelo menos 2 pontos (início e fim) para fazer uma curva
+#     if n_points <= 1:
+#         print("AVISO: n_points_per_curve deve ser pelo menos 2.")
+#         return np.array([[]]) # Retorna dados vazios
+
+#     for edge_node, start_vector in zip(edge_nodes, start_vectors):
+#         x_vector = middle_coord - edge_node
+#         radius = np.linalg.norm(x_vector) # Comprimento total da curva (raio)
+        
+#         # Pula se o ponto da borda estiver (quase) no centro
+#         if radius < 1e-6:
+#             continue
+
+#         # --- MUDANÇA PRINCIPAL ---
+#         # Agora, calculamos o 'resolution' com base no 'n_points' desejado
+#         # Há (n_points - 1) segmentos na curva
+#         resolution_along_radius = radius / (n_points - 1)
+#         # --- FIM DA MUDANÇA ---
+        
+#         # Cria eixos locais
+#         end_vector = x_vector / radius
+#         y_axis = np.cross(end_vector, longitudinal_vector)
+#         y_axis = y_axis / np.linalg.norm(y_axis)
+#         x_axis = np.cross(longitudinal_vector, y_axis)
+#         x_axis = x_axis / np.linalg.norm(x_axis)
+
+#         # n_points agora vem do argumento da função
+#         curve = np.zeros((n_points, 3))
+#         curve[0, :] = edge_node
+        
+#         # Distância do centro onde a curva começa a ficar plana
+#         flat_x = flat_percentage * radius
+        
+#         # Adiciona np.clip para segurança (evita erros de arccos com float)
+#         dot_product = np.clip(np.dot(start_vector, end_vector), -1.0, 1.0)
+#         start_angle = np.arccos(dot_product)
+
+#         for i in range(1, n_points):
+#             # A função vector_angle espera a distância do *centro*.
+#             # 'i' vai de 1 (perto da borda) a n_points-1 (perto do centro)
+#             dist_from_edge = i * resolution_along_radius
+#             dist_from_center = radius - dist_from_edge
+            
+#             angle = vector_angle(dist_from_center, start_angle, flat_x)
+            
+#             basis_transformation = np.vstack((x_axis, y_axis, longitudinal_vector)).transpose()
+#             R = np.array([[np.cos(angle), 0, -np.sin(angle)], [0, 1, 0], [np.sin(angle), 0, np.cos(angle)]])
+            
+#             # Aplica a rotação ao vetor que aponta para o centro
+#             new_vector_local = np.matmul(np.linalg.inv(basis_transformation), end_vector)
+#             rotated_vector_local = np.matmul(R, new_vector_local)
+#             new_vector_global = np.matmul(basis_transformation, rotated_vector_local)
+#             new_vector_global = new_vector_global / np.linalg.norm(new_vector_global)
+
+#             # Adiciona o novo ponto ao longo da direção do vetor
+#             curve[i, :] = curve[i-1,:] + new_vector_global * resolution_along_radius
+
+#         # --- Lógica de Escala (para garantir altura e raio exatos) ---
+#         # Adiciona verificação de segurança para divisão por zero
+        
+#         delta_z = np.dot(longitudinal_vector, curve[-1,:] - edge_node)
+#         delta_x = np.dot(x_axis, curve[-1,:] - edge_node)
+        
+#         if abs(delta_z) < 1e-6: delta_z = 1e-6
+#         if abs(delta_x) < 1e-6: delta_x = 1e-6
+            
+#         lid_scale = lid_rise / delta_z
+#         x_scale =  radius / delta_x
+        
+#         for i in range(0, n_points):
+#             curve_x = np.dot((curve[i,:]-edge_node), x_axis)
+#             curve_y = np.dot((curve[i,:]-edge_node), y_axis)
+#             curve_z = np.dot((curve[i,:]-edge_node), longitudinal_vector)
+#             curve[i, :] = (curve_x* x_axis*x_scale + curve_y*y_axis + curve_z * longitudinal_vector * lid_scale) + edge_node
+        
+#         # Exclui o primeiro ponto (que já está na borda)
+#         curve = curve[1:, :]
+
+#         data = np.concatenate((data,curve))
+        
+#     data = data[1:,:] # Remove o placeholder inicial
+#     return data
 
 if __name__ == '__main__':
     vtk_names = ['lv.vtk', 'rv.vtk', 'epi.vtk']
     edge_names = ['lv_edge_node_start_vectors.csv', 'rv_edge_node_start_vectors.csv', 'epi_edge_node_start_vectors.csv']
     save_names = ['lv_cap.txt', 'rv_cap.txt', 'epi_cap.txt']
-    lid_rise_percentages = [0.15, 0.15, 0.2]
+    lid_rise_percentages = [0.015, 0.015, 0.02]
     normal_vectors = [np.array([0, 0, 1]), np.array([0, 0, 1]), np.array([0, 0, 1])]
 
 
@@ -104,9 +198,9 @@ if __name__ == '__main__':
         data = reader.GetOutput()
 
         nodes_xyz = VN.vtk_to_numpy(data.GetPoints().GetData())  # Convert from mm to cm
-        fig = plt.figure(figsize=(8, 8))
-        ax = fig.add_subplot(projection='3d')
-        ax.scatter(nodes_xyz[:, 0], nodes_xyz[:, 1], nodes_xyz[:, 2], marker='*', c='b')
+        # fig = plt.figure(figsize=(8, 8))
+        # ax = fig.add_subplot(projection='3d')
+        # ax.scatter(nodes_xyz[:, 0], nodes_xyz[:, 1], nodes_xyz[:, 2], marker='*', c='b')
 
         num_points = data.GetNumberOfPoints()
         node_ids = np.arange(num_points)
@@ -124,12 +218,12 @@ if __name__ == '__main__':
         for i, idx in enumerate(edge_node_idx):
             edge_nodes[i, :] = nodes_xyz[np.where(node_ids==idx)[0],:]
 
-        cap_data = generate_cap_surface_data(edge_nodes=edge_nodes, start_vectors=start_vectors,
+        cap_data = generate_cap_surface_data(edge_nodes=edge_nodes, start_vectors=start_vectors * 0.1,
                                              longitudinal_vector=normal_vector, lid_rise=lid_rise,
-                                             flat_percentage=0.9,resolution_along_radius=0.05)
+                                             flat_percentage=0.9,resolution_along_radius=0.5)
 
-        ax.scatter(cap_data[:, 0], cap_data[:, 1], cap_data[:, 2], marker='*', c='m')
-        plt.show()
+        # ax.scatter(cap_data[:, 0], cap_data[:, 1], cap_data[:, 2], marker='*', c='m')
+        # plt.show()
 
         save_data(save_name, cap_data)
 

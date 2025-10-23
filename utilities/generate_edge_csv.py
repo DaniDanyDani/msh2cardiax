@@ -92,28 +92,28 @@ def extract_border_and_gradient(vtk_input_filename, csv_output_filename):
     df.to_csv(csv_output_filename, index=False)
     print("Processo concluído com sucesso!")
 
-    fig = plt.figure(figsize=(8, 8))
-    ax = fig.add_subplot(projection='3d')
+    # fig = plt.figure(figsize=(8, 8))
+    # ax = fig.add_subplot(projection='3d')
     
-    ax.scatter(all_points_np[::20, 0], all_points_np[::20, 1], all_points_np[::20, 2], c='gray', alpha=0.2, label='Superfície VE')
+    # ax.scatter(all_points_np[::20, 0], all_points_np[::20, 1], all_points_np[::20, 2], c='gray', alpha=0.2, label='Superfície VE')
     
-    ax.scatter(border_points_np[:, 0], border_points_np[:, 1], border_points_np[:, 2], c='r', marker='o', label='Pontos da Borda')
+    # ax.scatter(border_points_np[:, 0], border_points_np[:, 1], border_points_np[:, 2], c='r', marker='o', label='Pontos da Borda')
     
-    ax.quiver(
-        border_points_np[:, 0], border_points_np[:, 1], border_points_np[:, 2],
-        border_gradients_np[:, 0], border_gradients_np[:, 1], border_gradients_np[:, 2],
-        length=2.0,  # Ajuste o comprimento para melhor visualização
-        normalize=True,
-        color='b',
-        label='Gradientes (Eixo Longo)'
-    )
+    # ax.quiver(
+    #     border_points_np[:, 0], border_points_np[:, 1], border_points_np[:, 2],
+    #     border_gradients_np[:, 0], border_gradients_np[:, 1], border_gradients_np[:, 2],
+    #     length=2.0,  # Ajuste o comprimento para melhor visualização
+    #     normalize=True,
+    #     color='b',
+    #     label='Gradientes (Eixo Longo)'
+    # )
     
-    ax.set_xlabel('X')
-    ax.set_ylabel('Y')
-    ax.set_zlabel('Z')
-    ax.legend()
-    plt.title("Visualização da Borda e Gradientes")
-    plt.show()
+    # ax.set_xlabel('X')
+    # ax.set_ylabel('Y')
+    # ax.set_zlabel('Z')
+    # ax.legend()
+    # plt.title("Visualização da Borda e Gradientes")
+    # plt.show()
     
 
 
